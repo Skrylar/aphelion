@@ -1,0 +1,3 @@
+
+: foreach *.c |> gcc -Werror -Wall -c %f -o %o |> %B.o
+
