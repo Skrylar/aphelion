@@ -19,16 +19,19 @@ typedef struct _random_t {
    random_class_t* cls;
 } random_t;
 
+__attribute__((always_inline))
 inline uint32_t random_next_u32(random_t* self) {
    assert(self);
    return self->cls->rand32(self);
 }
 
+__attribute__((always_inline))
 inline float random_next_float(random_t* self) {
    assert(self);
    return self->cls->randf(self);
 }
 
+__attribute__((always_inline))
 inline void random_free(random_t* self) {
    assert(self);
    self->cls->free(self);

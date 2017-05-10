@@ -28,6 +28,7 @@ static void close(linear_layer_t* self) {
    tensor_float_free(self->values);
    tensor_float_free(self->weights);
    tensor_float_free(self->biases);
+   free(self);
 }
 
 static void forward(linear_layer_t* self, tensor_float_t* inputs) {
@@ -62,6 +63,9 @@ static void private_propagate(linear_layer_t* self, tensor_float_t* updates) {
 
 }
 
+static void randomize_weights(linear_layer_t* self, random_t* rng) {
+}
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
 static layer_class_t linear_layer_class = {
@@ -70,7 +74,8 @@ static layer_class_t linear_layer_class = {
    &gradient,
    &private_gradient,
    &propagate,
-   &private_propagate
+   &private_propagate,
+   &randomize_weights
 };
 #pragma GCC diagnostic pop
 
