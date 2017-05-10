@@ -1,17 +1,8 @@
 
-#include "layer.h"
+#include "linear-layer.h"
 #include "tensor.h"
 
 #include <stdlib.h>
-
-typedef struct _linear_layer_t {
-   layer_t super;
-
-   tensor_float_t* values;
-   tensor_float_t* weights;
-   tensor_float_t* private_weights;
-   tensor_float_t* biases;
-} linear_layer_t;
 
 static int open(linear_layer_t* self) {
    self->values = tensor_float_flat_new(self->super.value_count);
