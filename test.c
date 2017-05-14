@@ -18,6 +18,7 @@ int main(int argc, const char** argvs) {
    assert(randomizer);
 
    tensor_float_t* error_cache = tensor_float_flat_new(3*3);
+   tensor_float_t* error_cache2 = tensor_float_flat_new(3*3);
 
    // create the network
    tensor_float_t* input = tensor_float_flat_new(3);
@@ -40,15 +41,34 @@ int main(int argc, const char** argvs) {
    layer_randomize_weights(layer, randomizer);
    layer_randomize_weights(layer2, randomizer);
 
+   for (int i = 0; i < 5; i++) {
    // forward pass
    layer_forward(layer, input);
    layer_forward(layer2, layer->values);
 
    // calculate errors
    float loss = tensor_float_mse(error_cache, layer2->values, goals);
-   printf("Initial loss %f\n", loss);
+   printf("Loss %f\n", loss);
 
    // work backwards
+   {
+      // start from derivatives of the goal function
+      tensor_float_mse_derivs(error_cache, layer2->values, goals);
+      tensor_float_set(error_cache2, error_cache);
+
+      // apply derivatives
+      layer_gradient(layer2, layer->values, error_cache);
+
+      // backpropagate
+      layer_propagate(layer2, error_cache);
+
+      // apply derivatives to private weights
+      layer_private_gradient(layer2, layer->values, error_cache);
+
+      // backpropagate private weights
+      layer_private_propagate(layer2, error_cache);
+   }
+   }
 
    // clean up
    layer_free(layer);
@@ -56,6 +76,7 @@ int main(int argc, const char** argvs) {
 
    tensor_float_free(goals);
    tensor_float_free(error_cache);
+   tensor_float_free(error_cache2);
 
    random_free(randomizer);
 }

@@ -51,6 +51,36 @@ inline void layer_forward(layer_t* self, tensor_float_t* inputs) {
 }
 
 __attribute__((always_inline))
+inline void layer_gradient(layer_t* self, tensor_float_t* inputs, tensor_float_t* deltas) {
+   assert(self);
+   assert(inputs);
+   assert(deltas);
+   self->cls->gradient(self, inputs, deltas);
+}
+
+__attribute__((always_inline))
+inline void layer_private_gradient(layer_t* self, tensor_float_t* inputs, tensor_float_t* deltas) {
+   assert(self);
+   assert(inputs);
+   assert(deltas);
+   self->cls->private_gradient(self, inputs, deltas);
+}
+
+__attribute__((always_inline))
+inline void layer_propagate(layer_t* self, tensor_float_t* changes) {
+   assert(self);
+   assert(changes);
+   self->cls->propagate(self, changes);
+}
+
+__attribute__((always_inline))
+inline void layer_private_propagate(layer_t* self, tensor_float_t* changes) {
+   assert(self);
+   assert(changes);
+   self->cls->private_propagate(self, changes);
+}
+
+__attribute__((always_inline))
 inline void layer_free(layer_t* self) {
    assert(self);
    self->cls->close(self);

@@ -87,8 +87,8 @@ void tensor_float_mul1(tensor_float_t* self, float operand) {
 void tensor_float_mul(tensor_float_t* self, tensor_float_t* operand) {
    assert(self);
    assert(operand);
-   if (self->length != operand->length) abort();;
-   for (int i = 0; i < self->length; i++) {
+   int len = min(self->length, operand->length);
+   for (int i = 0; i < len; i++) {
       self->values[i] *= operand->values[i];
    }
 }
