@@ -40,7 +40,7 @@ static void close(linear_layer_t* self) {
 }
 
 static void forward(linear_layer_t* self, tensor_float_t* inputs) {
-   tensor_float_set(self->super.values, 0);
+   tensor_float_set1(self->super.values, 0);
    tensor_float_spread(inputs, self->super.weights, self->super.values);
    tensor_float_div1(self->super.values, inputs->length);
    tensor_float_add(self->super.values, self->biases);
@@ -78,6 +78,10 @@ static void randomize_weights(linear_layer_t* self, random_t* rng) {
 
    for (int i = 0; i < self->private_weights->length; i++) {
       tensor_float_set_at(self->private_weights, i, random_next_float(rng));
+   }
+
+   for (int i = 0; i < self->biases->length; i++) {
+      tensor_float_set_at(self->biases, i, random_next_float(rng));
    }
 }
 

@@ -18,11 +18,19 @@ int main(int argc, const char** argvs) {
 
    layer_t* layer = (layer_t*)linear_layer_new(3, 3);
    assert(layer);
+
+   layer_t* layer2 = (layer_t*)linear_layer_new(3, 3);
+   assert(layer2);
+
    layer_randomize_weights(layer, randomizer);
+   layer_randomize_weights(layer2, randomizer);
 
    layer_forward(layer, input);
+   layer_forward(layer2, layer->values);
 
    layer_free(layer);
+   layer_free(layer2);
+
    random_free(randomizer);
 }
 
