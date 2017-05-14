@@ -1,4 +1,4 @@
 
-: foreach random/*.c *.c |> gcc -Werror -Wall -c %f -o %o |> %f.o {src}
+: foreach criterion/*.c random/*.c *.c |> ^ CC %f^ gcc -I. -Werror -Wall -c %f -o %o |> %f.o {src}
 : {src} |> gcc %f -o %o -lm |> test
 

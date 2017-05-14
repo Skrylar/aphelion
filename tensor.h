@@ -9,6 +9,8 @@ typedef struct _tensor_float_t {
 // memory it's going to cause some problems
 #define tensor_float_set_at(self, index, value) \
 	 self->values[index] = value
+#define tensor_float_get_at(self, index, value) \
+	 self->values[index]
 
 int tensor_float_copy(tensor_float_t* dest, tensor_float_t* source, int dest_offset, int source_offset, int length);
 tensor_float_t* tensor_float_flat_new(int length);

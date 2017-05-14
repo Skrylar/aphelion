@@ -1,4 +1,8 @@
 
+// TODO replace seeding with a simple key scheduler; that way we aren't
+// dependent on weird environmental factors for initializing random
+// numbers.
+
 #include "random.h"
 
 // https://en.wikipedia.org/wiki/Multiply-with-carry
@@ -18,7 +22,6 @@ struct cmwc {
    unsigned i;
 };
 
-// Make 32 bit random number (some systems use 16 bit RAND_MAX [Visual C 2012 uses 15 bits!])
 static uint32_t rand32(void)
 {
    uint32_t result = rand();

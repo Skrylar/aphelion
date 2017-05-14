@@ -7,8 +7,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define checkself if (!self) abort();
+#include <assert.h>
 
 int tensor_float_copy(tensor_float_t* dest, tensor_float_t* source,
       int dest_offset, int source_offset, int length)
@@ -21,6 +20,8 @@ int tensor_float_copy(tensor_float_t* dest, tensor_float_t* source,
 
 /* gives you a tensor created from ostensibly contiguous memory */
 tensor_float_t* tensor_float_flat_new(int length) {
+   assert(length > 0);
+
    tensor_float_t* self = calloc(1, sizeof(tensor_float_t));
    self->length = length;
    if (!self) return 0;
@@ -44,9 +45,10 @@ void tensor_float_spread(tensor_float_t* source,
       tensor_float_t* weights,
       tensor_float_t* destination)
 {
-   // TODO elide these during NDEBUG builds
-   if ((source == 0) || (weights == 0) || (destination == 0)) abort();
-   if (weights->length < (source->length * destination->length)) abort();
+   assert(source);
+   assert(weights);
+   assert(destination);
+   assert(weights->length >= (source->length * destination->length));
 
    for (int i = 0; i < destination->length; i++) {
       for (int j = 0; j < source->length; j++) {
@@ -57,14 +59,15 @@ void tensor_float_spread(tensor_float_t* source,
 }
 
 void tensor_float_set1(tensor_float_t* self, float operand) {
-   checkself;
+   assert(self);
    for (int i = 0; i < self->length; i++) {
       self->values[i] = operand;
    }
 }
 
 void tensor_float_set(tensor_float_t* self, tensor_float_t* operand) {
-   checkself;
+   assert(self);
+   assert(operand);
    if (self->length != operand->length) abort();
    for (int i = 0; i < self->length; i++) {
       self->values[i] = operand->values[i];
@@ -72,14 +75,15 @@ void tensor_float_set(tensor_float_t* self, tensor_float_t* operand) {
 }
 
 void tensor_float_mul1(tensor_float_t* self, float operand) {
-   checkself;
+   assert(self);
    for (int i = 0; i < self->length; i++) {
       self->values[i] *= operand;
    }
 }
 
 void tensor_float_mul(tensor_float_t* self, tensor_float_t* operand) {
-   checkself;
+   assert(self);
+   assert(operand);
    if (self->length != operand->length) abort();;
    for (int i = 0; i < self->length; i++) {
       self->values[i] *= operand->values[i];
@@ -87,14 +91,15 @@ void tensor_float_mul(tensor_float_t* self, tensor_float_t* operand) {
 }
 
 void tensor_float_div1(tensor_float_t* self, float operand) {
-   checkself;
+   assert(self);
    for (int i = 0; i < self->length; i++) {
       self->values[i] /= operand;
    }
 }
 
 void tensor_float_div(tensor_float_t* self, tensor_float_t* operand) {
-   checkself;
+   assert(self);
+   assert(operand);
    if (self->length != operand->length) abort();;
    for (int i = 0; i < self->length; i++) {
       self->values[i] /= operand->values[i];
@@ -102,14 +107,16 @@ void tensor_float_div(tensor_float_t* self, tensor_float_t* operand) {
 }
 
 void tensor_float_add1(tensor_float_t* self, float operand) {
-   checkself;
+   assert(self);
+   assert(operand);
    for (int i = 0; i < self->length; i++) {
       self->values[i] += operand;
    }
 }
 
 void tensor_float_add(tensor_float_t* self, tensor_float_t* operand) {
-   checkself;
+   assert(self);
+   assert(operand);
    if (self->length != operand->length) abort();;
    for (int i = 0; i < self->length; i++) {
       self->values[i] += operand->values[i];
@@ -117,14 +124,15 @@ void tensor_float_add(tensor_float_t* self, tensor_float_t* operand) {
 }
 
 void tensor_float_sub1(tensor_float_t* self, float operand) {
-   checkself;
+   assert(self);
    for (int i = 0; i < self->length; i++) {
       self->values[i] -= operand;
    }
 }
 
 void tensor_float_sub(tensor_float_t* self, tensor_float_t* operand) {
-   checkself;
+   assert(self);
+   assert(operand);
    if (self->length != operand->length) abort();;
    for (int i = 0; i < self->length; i++) {
       self->values[i] -= operand->values[i];
@@ -132,29 +140,34 @@ void tensor_float_sub(tensor_float_t* self, tensor_float_t* operand) {
 }
 
 void tensor_float_max1(tensor_float_t* self, float operand) {
-   checkself;
+   assert(self);
    for (int i = 0; i < self->length; i++) {
       self->values[i] = fmax(self->values[i], operand);
    }
 }
 
+__attribute__((nonnull))
 void tensor_float_max(tensor_float_t* self, tensor_float_t* operand) {
-   checkself;
+   assert(self);
+   assert(operand);
    if (self->length != operand->length) abort();;
    for (int i = 0; i < self->length; i++) {
       self->values[i] = fmax(self->values[i], operand->values[i]);
    }
 }
 
+__attribute__((nonnull))
 void tensor_float_min1(tensor_float_t* self, float operand) {
-   checkself;
+   assert(self);
    for (int i = 0; i < self->length; i++) {
       self->values[i] = fmin(self->values[i], operand);
    }
 }
 
+__attribute__((nonnull))
 void tensor_float_min(tensor_float_t* self, tensor_float_t* operand) {
-   checkself;
+   assert(self);
+   assert(operand);
    if (self->length != operand->length) abort();;
    for (int i = 0; i < self->length; i++) {
       self->values[i] = fmin(self->values[i], operand->values[i]);
@@ -164,12 +177,31 @@ void tensor_float_min(tensor_float_t* self, tensor_float_t* operand) {
 //__attribute__((optimize("unroll-loops")))
 //__attribute__((optimize("fast-math")))
 float tensor_float_hsum1(tensor_float_t* self) {
-   checkself;
+   assert(self);
    float accum = 0.0;
    for (int i = 0; i < self->length; i++) {
       accum += self->values[i];
    }
    return accum;
+}
+
+// takes a tensor of weights and sums those in to a smaller operand; so
+// if 'self' is 10 weights and 5 for each neuron, the operand will have
+// a length of two, and be filled with the sums of those weights. this
+// lets us calculate the amount of "fault" a given neuron is at.
+void tensor_float_despread_sum(tensor_float_t* self, tensor_float_t* operand)
+{
+   assert(self);
+   assert(operand);
+   assert((self->length % operand->length) == 0);
+
+   int stripe = self->length / operand->length;
+   int at = 0;
+   for (int i = 0; i < operand->length; i++) {
+      for (int j = 0; j < stripe; j++) {
+	 operand->values[i] += self->values[at++];
+      }
+   }
 }
 
 void tensor_float_free(tensor_float_t* self) {

@@ -1,41 +1,49 @@
 
+#include "random/random.h"
 #include "linear-layer.h"
 #include "tensor.h"
 
 #include <stdlib.h>
 
 static int open(linear_layer_t* self) {
-   self->values = tensor_float_flat_new(self->super.value_count);
-   if (!self->values) goto no_values;
+   self->super.values = tensor_float_flat_new(self->super.value_count);
+   if (!self->super.values) goto no_values;
 
-   self->weights = tensor_float_flat_new((self->super.value_count) * self->super.input_count);
-   if (!self->weights) goto no_weights;
+   self->super.weights = tensor_float_flat_new((self->super.value_count) * self->super.input_count);
+   if (!self->super.weights) goto no_weights;
 
    self->biases = tensor_float_flat_new(self->super.value_count);
    if (!self->biases) goto no_biases;
+   tensor_float_set1(self->biases, 0);
+
+   self->private_weights = tensor_float_flat_new(self->super.value_count);
+   if (!self->private_weights) goto no_private_weights;
 
    return 0;
 
+no_private_weights:
+   tensor_float_free(self->biases);
 no_biases:
-   tensor_float_free(self->weights);
+   tensor_float_free(self->super.weights);
 no_weights:
-   tensor_float_free(self->values);
+   tensor_float_free(self->super.values);
 no_values:
    return 1;
 }
 
 static void close(linear_layer_t* self) {
-   tensor_float_free(self->values);
-   tensor_float_free(self->weights);
+   tensor_float_free(self->super.values);
+   tensor_float_free(self->super.weights);
+   tensor_float_free(self->private_weights);
    tensor_float_free(self->biases);
    free(self);
 }
 
 static void forward(linear_layer_t* self, tensor_float_t* inputs) {
-   tensor_float_set(self->values, 0);
-   tensor_float_spread(inputs, self->weights, self->values);
-   tensor_float_div1(self->values, inputs->length);
-   tensor_float_add(self->values, self->biases);
+   tensor_float_set(self->super.values, 0);
+   tensor_float_spread(inputs, self->super.weights, self->super.values);
+   tensor_float_div1(self->super.values, inputs->length);
+   tensor_float_add(self->super.values, self->biases);
 }
 
 static void gradient(linear_layer_t* self,
@@ -55,7 +63,7 @@ static void private_gradient(linear_layer_t* self,
 }
 
 static void propagate(linear_layer_t* self, tensor_float_t* updates) {
-   tensor_float_sub(self->weights, updates);
+   tensor_float_sub(self->super.weights, updates);
 }
 
 static void private_propagate(linear_layer_t* self, tensor_float_t* updates) {
@@ -64,6 +72,13 @@ static void private_propagate(linear_layer_t* self, tensor_float_t* updates) {
 }
 
 static void randomize_weights(linear_layer_t* self, random_t* rng) {
+   for (int i = 0; i < self->super.weights->length; i++) {
+      tensor_float_set_at(self->super.weights, i, random_next_float(rng));
+   }
+
+   for (int i = 0; i < self->private_weights->length; i++) {
+      tensor_float_set_at(self->private_weights, i, random_next_float(rng));
+   }
 }
 
 #pragma GCC diagnostic push

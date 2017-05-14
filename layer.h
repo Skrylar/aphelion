@@ -32,12 +32,22 @@ typedef struct _layer_t {
    int private_weight_count;
    /* how many neurons exist in the previous layer? */
    int input_count;
+
+   tensor_float_t* values;
+   tensor_float_t* weights;
 } layer_t;
 
 __attribute__((always_inline))
 inline void layer_randomize_weights(layer_t* self, random_t* rng) {
    assert(self);
    self->cls->randomize_weights(self, rng);
+}
+
+__attribute__((always_inline))
+inline void layer_forward(layer_t* self, tensor_float_t* inputs) {
+   assert(self);
+   assert(inputs);
+   self->cls->forward(self, inputs);
 }
 
 __attribute__((always_inline))
