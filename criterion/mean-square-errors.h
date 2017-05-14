@@ -1,6 +1,6 @@
 #pragma once
 
-typedef struct tensor_float_t tensor_float_t;
+typedef struct _tensor_float_t tensor_float_t;
 
 /* calculates mean squared errors for the loss function; ex. for showing
  * total loss */

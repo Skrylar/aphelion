@@ -9,6 +9,8 @@
 #include <string.h>
 #include <assert.h>
 
+#define min(x,y) ((x < y) ? x : y)
+
 int tensor_float_copy(tensor_float_t* dest, tensor_float_t* source,
       int dest_offset, int source_offset, int length)
 {
@@ -68,8 +70,9 @@ void tensor_float_set1(tensor_float_t* self, float operand) {
 void tensor_float_set(tensor_float_t* self, tensor_float_t* operand) {
    assert(self);
    assert(operand);
-   if (self->length != operand->length) abort();
-   for (int i = 0; i < self->length; i++) {
+
+   int len = min(self->length, operand->length);
+   for (int i = 0; i < len; i++) {
       self->values[i] = operand->values[i];
    }
 }
@@ -133,8 +136,8 @@ void tensor_float_sub1(tensor_float_t* self, float operand) {
 void tensor_float_sub(tensor_float_t* self, tensor_float_t* operand) {
    assert(self);
    assert(operand);
-   if (self->length != operand->length) abort();;
-   for (int i = 0; i < self->length; i++) {
+   int len = min(self->length, operand->length);
+   for (int i = 0; i < len; i++) {
       self->values[i] -= operand->values[i];
    }
 }
@@ -150,8 +153,8 @@ __attribute__((nonnull))
 void tensor_float_max(tensor_float_t* self, tensor_float_t* operand) {
    assert(self);
    assert(operand);
-   if (self->length != operand->length) abort();;
-   for (int i = 0; i < self->length; i++) {
+   int len = min(self->length, operand->length);
+   for (int i = 0; i < len; i++) {
       self->values[i] = fmax(self->values[i], operand->values[i]);
    }
 }
@@ -168,8 +171,8 @@ __attribute__((nonnull))
 void tensor_float_min(tensor_float_t* self, tensor_float_t* operand) {
    assert(self);
    assert(operand);
-   if (self->length != operand->length) abort();;
-   for (int i = 0; i < self->length; i++) {
+   int len = min(self->length, operand->length);
+   for (int i = 0; i < len; i++) {
       self->values[i] = fmin(self->values[i], operand->values[i]);
    }
 }
