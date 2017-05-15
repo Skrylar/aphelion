@@ -80,7 +80,7 @@ tanh_layer_t* tanh_layer_new(int inputs, int outputs) {
    self->super.input_count = inputs;
    self->super.value_count = outputs;
    /* one private weight for each layer */
-   self->super.private_weight_count = inputs;
+   self->super.private_weight_count = 0;
 
    if (open(self) != 0) goto fucked;
 
