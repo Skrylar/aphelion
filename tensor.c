@@ -177,6 +177,46 @@ void tensor_float_min(tensor_float_t* self, tensor_float_t* operand) {
    }
 }
 
+__attribute__((nonnull))
+void tensor_float_exp(tensor_float_t* dest) {
+   assert(dest);
+   for (int i = 0; i < dest->length; i++) {
+      dest->values[i] = exp(dest->values[i]);
+   }
+}
+
+/* hyperbolic tangent
+ * https://en.wikipedia.org/wiki/Hyperbolic_function */
+__attribute__((nonnull))
+void tensor_float_tanh(tensor_float_t* dest) {
+   assert(dest);
+
+   for (int i = 0; i < dest->length; i++) {
+      dest->values[i] = exp(-(2 * dest->values[i]));
+   }
+
+   for (int i = 0; i < dest->length; i++) {
+      dest->values[i] = (1 - dest->values[i]) / (1 + dest->values[i]);
+   }
+}
+
+/* hyperbolic tangent's derivative
+ * derived with SAGE */
+__attribute__((nonnull))
+void tensor_float_tanh_deriv(tensor_float_t* dest) {
+   assert(dest);
+
+   tensor_float_mul1(dest, -2);
+   tensor_float_exp(dest);
+
+   // this one is going to be "fun" to write an AVX version of
+   for (int i = 0; i < dest->length; i++) {
+#define e (dest->values[i])
+      dest->values[i] = 2 * (1 - e) * e / (1 + pow(e, 2) + 2 * e / (1 + e));
+#undef e
+   }
+}
+
 //__attribute__((optimize("unroll-loops")))
 //__attribute__((optimize("fast-math")))
 float tensor_float_hsum1(tensor_float_t* self) {

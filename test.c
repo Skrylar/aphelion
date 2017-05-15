@@ -6,6 +6,7 @@
 
 #include "tensor.h"
 #include "layer/linear-layer.h"
+#include "layer/tanh-layer.h"
 #include "layer/layer.h"
 
 #include <stdio.h>
@@ -34,7 +35,7 @@ int main(int argc, const char** argvs) {
    layer_t* layer = (layer_t*)linear_layer_new(3, 3);
    assert(layer);
 
-   layer_t* layer2 = (layer_t*)linear_layer_new(3, 3);
+   layer_t* layer2 = (layer_t*)tanh_layer_new(3, 3);
    assert(layer2);
 
    // initialize

@@ -29,6 +29,9 @@ void tensor_float_max1(tensor_float_t* self, float operand);
 void tensor_float_max(tensor_float_t* self, tensor_float_t* operand);
 void tensor_float_min1(tensor_float_t* self, float operand);
 void tensor_float_min(tensor_float_t* self, tensor_float_t* operand);
+void tensor_float_exp(tensor_float_t* self);
+void tensor_float_tanh(tensor_float_t* self);
+void tensor_float_tanh_deriv(tensor_float_t* self);
 float tensor_float_hsum1(tensor_float_t* self);
 void tensor_float_free(tensor_float_t* self);
 

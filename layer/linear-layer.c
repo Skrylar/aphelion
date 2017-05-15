@@ -68,7 +68,6 @@ static void propagate(linear_layer_t* self, tensor_float_t* updates) {
 
 static void private_propagate(linear_layer_t* self, tensor_float_t* updates) {
    tensor_float_sub(self->private_weights, updates);
-
 }
 
 static void randomize_weights(linear_layer_t* self, random_t* rng) {
