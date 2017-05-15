@@ -14,7 +14,8 @@ typedef struct _tensor_float_t {
 
 int tensor_float_copy(tensor_float_t* dest, tensor_float_t* source, int dest_offset, int source_offset, int length);
 tensor_float_t* tensor_float_flat_new(int length);
-void tensor_float_spread(tensor_float_t* source, tensor_float_t* weights, tensor_float_t* destination);
+void tensor_float_sum_spread(tensor_float_t* source, tensor_float_t* weights, tensor_float_t* destination);
+void tensor_float_set_spread(tensor_float_t* source, tensor_float_t* weights, tensor_float_t* destination);
 void tensor_float_set1(tensor_float_t* self, float operand);
 void tensor_float_set(tensor_float_t* self, tensor_float_t* operand);
 void tensor_float_mul1(tensor_float_t* self, float operand);

@@ -60,6 +60,23 @@ void tensor_float_spread(tensor_float_t* source,
    }
 }
 
+void tensor_float_set_spread(tensor_float_t* source,
+      tensor_float_t* weights,
+      tensor_float_t* destination)
+{
+   assert(source);
+   assert(weights);
+   assert(destination);
+   assert(weights->length >= (source->length * destination->length));
+
+   for (int i = 0; i < destination->length; i++) {
+      for (int j = 0; j < source->length; j++) {
+	 destination->values[i] = source->values[j] *
+	    weights->values[(i * destination->length) + j];
+      }
+   }
+}
+
 void tensor_float_set1(tensor_float_t* self, float operand) {
    assert(self);
    for (int i = 0; i < self->length; i++) {
@@ -120,9 +137,22 @@ void tensor_float_add1(tensor_float_t* self, float operand) {
 void tensor_float_add(tensor_float_t* self, tensor_float_t* operand) {
    assert(self);
    assert(operand);
-   if (self->length != operand->length) abort();;
-   for (int i = 0; i < self->length; i++) {
+   int len = min(self->length, operand->length);
+   for (int i = 0; i < len; i++) {
       self->values[i] += operand->values[i];
+   }
+}
+
+void tensor_float_set_add(tensor_float_t* self,
+      tensor_float_t* operand1,
+      tensor_float_t* operand2)
+{
+   assert(self);
+   assert(operand1);
+   assert(operand2);
+   int len = min(min(self->length, operand1->length), operand2->length);
+   for (int i = 0; i < len; i++) {
+      self->values[i] = operand1->values[i] + operand2->values[i];
    }
 }
 

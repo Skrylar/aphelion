@@ -27,8 +27,7 @@ static void close(tanh_layer_t* self) {
 }
 
 static void forward(tanh_layer_t* self, tensor_float_t* inputs) {
-   tensor_float_set1(self->super.values, 0);
-   tensor_float_spread(inputs, self->super.weights, self->super.values);
+   tensor_float_set_spread(inputs, self->super.weights, self->super.values);
    tensor_float_tanh(self->super.values);
 }
 
