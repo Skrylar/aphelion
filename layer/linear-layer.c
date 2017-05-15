@@ -12,18 +12,12 @@ static int open(linear_layer_t* self) {
    self->super.weights = tensor_float_flat_new((self->super.value_count) * self->super.input_count);
    if (!self->super.weights) goto no_weights;
 
-   self->biases = tensor_float_flat_new(self->super.value_count);
-   if (!self->biases) goto no_biases;
-   tensor_float_set1(self->biases, 0);
-
    self->private_weights = tensor_float_flat_new(self->super.value_count);
    if (!self->private_weights) goto no_private_weights;
 
    return 0;
 
 no_private_weights:
-   tensor_float_free(self->biases);
-no_biases:
    tensor_float_free(self->super.weights);
 no_weights:
    tensor_float_free(self->super.values);
@@ -35,7 +29,6 @@ static void close(linear_layer_t* self) {
    tensor_float_free(self->super.values);
    tensor_float_free(self->super.weights);
    tensor_float_free(self->private_weights);
-   tensor_float_free(self->biases);
    free(self);
 }
 
@@ -43,7 +36,7 @@ static void forward(linear_layer_t* self, tensor_float_t* inputs) {
    tensor_float_set1(self->super.values, 0);
    tensor_float_spread(inputs, self->super.weights, self->super.values);
    tensor_float_div1(self->super.values, inputs->length);
-   tensor_float_add(self->super.values, self->biases);
+   tensor_float_add(self->super.values, self->private_weights);
 }
 
 static void gradient(linear_layer_t* self,
@@ -59,7 +52,7 @@ static void private_gradient(linear_layer_t* self,
 		tensor_float_t* deltas)
 {
    // fix up the private deltas
-   tensor_float_set(deltas, self->biases);
+   tensor_float_set(deltas, self->private_weights);
 }
 
 static void propagate(linear_layer_t* self, tensor_float_t* updates) {
@@ -77,10 +70,6 @@ static void randomize_weights(linear_layer_t* self, random_t* rng) {
 
    for (int i = 0; i < self->private_weights->length; i++) {
       tensor_float_set_at(self->private_weights, i, random_next_float(rng));
-   }
-
-   for (int i = 0; i < self->biases->length; i++) {
-      tensor_float_set_at(self->biases, i, random_next_float(rng));
    }
 }
 
