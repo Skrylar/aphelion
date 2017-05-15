@@ -1,4 +1,4 @@
 
-: foreach criterion/*.c random/*.c *.c |> ^ CC %f^ gcc -g -I. -Werror -Wall -c %f -o %o |> %f.o {src}
-: {src} |> gcc %f -o %o -lm |> test
+: foreach layer/*.c criterion/*.c random/*.c *.c |> ^ CC %f^ ccache clang -g -I. -Werror -Wall -c %f -o %o |> %f.o {src}
+: {src} |> ccache clang %f -o %o -lm |> test
 

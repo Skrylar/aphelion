@@ -1,6 +1,6 @@
 #pragma once
 
-#include "layer.h"
+#include "layer/layer.h"
 
 typedef struct _linear_layer_t {
    layer_t super;

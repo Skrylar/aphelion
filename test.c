@@ -5,8 +5,8 @@
 #include "random/cmwc.h"
 
 #include "tensor.h"
-#include "linear-layer.h"
-#include "layer.h"
+#include "layer/linear-layer.h"
+#include "layer/layer.h"
 
 #include <stdio.h>
 #include <time.h>
