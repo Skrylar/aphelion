@@ -110,6 +110,16 @@ void tensor_float_mul(tensor_float_t* self, tensor_float_t* operand) {
    }
 }
 
+void tensor_float_set_mul(tensor_float_t* self, tensor_float_t* operand1, tensor_float_t* operand2) {
+   assert(self);
+   assert(operand1);
+   assert(operand2);
+   int len = min(min(operand1->length, operand2->length), self->length);
+   for (int i = 0; i < len; i++) {
+      self->values[i] = operand1->values[i] * operand2->values[i];
+   }
+}
+
 void tensor_float_div1(tensor_float_t* self, float operand) {
    assert(self);
    for (int i = 0; i < self->length; i++) {
@@ -143,10 +153,15 @@ void tensor_float_add(tensor_float_t* self, tensor_float_t* operand) {
    }
 }
 
-void tensor_float_set_add(tensor_float_t* self,
-      tensor_float_t* operand1,
-      tensor_float_t* operand2)
-{
+void tensor_float_add_len(tensor_float_t* self, tensor_float_t* operand, int len) {
+   assert(self);
+   assert(operand);
+   for (int i = 0; i < len; i++) {
+      self->values[i] += operand->values[i];
+   }
+}
+
+void tensor_float_set_add(tensor_float_t* self, tensor_float_t* operand1, tensor_float_t* operand2) {
    assert(self);
    assert(operand1);
    assert(operand2);
@@ -226,6 +241,19 @@ void tensor_float_tanh(tensor_float_t* dest) {
    }
 
    for (int i = 0; i < dest->length; i++) {
+      dest->values[i] = (1 - dest->values[i]) / (1 + dest->values[i]);
+   }
+}
+
+__attribute__((nonnull))
+void tensor_float_tanh_len(tensor_float_t* dest, int len) {
+   assert(dest);
+
+   for (int i = 0; i < len; i++) {
+      dest->values[i] = exp(-(2 * dest->values[i]));
+   }
+
+   for (int i = 0; i < len; i++) {
       dest->values[i] = (1 - dest->values[i]) / (1 + dest->values[i]);
    }
 }

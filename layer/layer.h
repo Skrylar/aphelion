@@ -35,6 +35,8 @@ typedef struct _layer_t {
 
    tensor_float_t* values;
    tensor_float_t* weights;
+
+   tensor_float_t* scratch[3];
 } layer_t;
 
 __attribute__((always_inline))
