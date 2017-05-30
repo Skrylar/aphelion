@@ -25,13 +25,14 @@ method forward*(self: LinearLayer, inputs: Tensor) {.base.} =
    self.values.divide(float32(inputs.len))
    self.values.add(self.private_weights)
 
-method gradient*(self: LinearLayer, inputs, deltas: Tensor) {.base.} =
+method gradient*(self: LinearLayer, inputs, deltas, total: Tensor) {.base.} =
    # get the big stuff
    deltas.mul(inputs)
+   total.add(deltas)
 
-method private_gradient*(self: LinearLayer, inputs, deltas: Tensor) {.base.} =
+method private_gradient*(self: LinearLayer, inputs, deltas, total: Tensor) {.base.} =
    # fix up the private deltas
-   deltas.add(self.private_weights)
+   total.add(self.private_weights)
 
 method propagate*(self: LinearLayer, updates: Tensor) {.base.} =
    self.weights.sub(updates)
