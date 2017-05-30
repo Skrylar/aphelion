@@ -120,7 +120,7 @@ template defop(name, op: untyped) =
 
 defop(`add`, `+`)
 defop(`mul`, `*`)
-defop(`div`, `/`)
+defop(`divide`, `/`)
 defop(`sub`, `-`)
 
 proc tanh*(self: Tensor, count: int) =
