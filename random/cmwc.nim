@@ -61,3 +61,11 @@ method next_u32(state: Cmwc): uint32 =
    state.Q[state.i] = m - x;
    return state.Q[state.i]
 
+when isMainModule:
+   var rng = Cmwc()
+   rng.seed(32)
+   echo rng.next_u32
+   echo rng.next_u32
+   echo rng.next_float
+   echo rng.next_float
+
