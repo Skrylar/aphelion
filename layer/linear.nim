@@ -1,11 +1,11 @@
 
+import layer
 import ../random/random
 import ../tensor
 
 type
-   LinearLayer* = ref object
-      values, weights, private_weights: Tensor
-      input_count, value_count, private_weight_count: int
+   LinearLayer* = ref object of Layer
+      private_weights: Tensor
 
 method open*(self: LinearLayer) {.base.} =
    self.values = make_tensor(self.value_count)
