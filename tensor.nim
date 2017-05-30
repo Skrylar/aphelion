@@ -70,6 +70,9 @@ proc set*(self, other: Tensor) =
    let x = min(self.data.high, other.data.high)
    self.set(other, x)
 
+template set_at*(self: Tensor, pos: int, value: float) =
+  self.data[pos] = value
+
 proc max*(self: Tensor, operand: float32) =
    assert(self != nil)
    for i in 0..self.data.high:
