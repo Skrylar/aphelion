@@ -42,7 +42,7 @@ method randomize_weights*(self: TanhLayer, rng: Random) {.base.} =
    for i in 0..(self.weights.len - 1):
       self.weights.set_at(i, rng.next_float);
 
-proc make_linear_layer*(inputs, outputs: int): TanhLayer =
+proc make_tanh_layer*(inputs, outputs: int): TanhLayer =
    result = TanhLayer()
    result.input_count = inputs
    result.value_count = outputs
