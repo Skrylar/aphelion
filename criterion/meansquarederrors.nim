@@ -21,6 +21,5 @@ proc mse_derivs*(dest, results, goals: Tensor) =
    assert results != nil
    assert goals != nil
 
-   set(dest, results)
-   sub(dest, goals)
+   set_sub(dest, results, goals)
 
