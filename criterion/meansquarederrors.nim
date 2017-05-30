@@ -8,8 +8,7 @@ proc mse*(tmp, results, goals: Tensor): float32 =
    assert results != nil
    assert goals != nil
 
-   set(tmp, results)
-   sub(tmp, goals)
+   set_sub(tmp, results, goals)
    mul(tmp, tmp)
    mul(tmp, 0.5)
 
