@@ -6,8 +6,8 @@ type
     data: seq[float32]
 
 proc make_tensor*(size: int): Tensor =
-  var self = Tensor()
-  setLen(self.data, size)
+  result = Tensor()
+  newSeq(result.data, size)
 
 # XXX i don't know what nim's equivalent to memcpy is
 # XXX i don't know if we can disable bounds checking on sequences (or
