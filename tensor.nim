@@ -97,7 +97,7 @@ proc exp*(self: Tensor) =
    for i in 0..self.data.high:
       self.data[i] = exp(self.data[i])
 
-template defop(name, op: untyped) =
+template defop(name, set_name, op: untyped) =
    proc name*(self: Tensor, operand: float32) =
       for i in 0..self.data.high:
          self.data[i] = op(self.data[i], operand)
@@ -106,6 +106,11 @@ template defop(name, op: untyped) =
       let x = min(dest.data.high, operand.data.high)
       for i in 0..x:
          dest.data[i] = op(dest.data[i], operand.data[i])
+
+   proc set_name*(dest, operand1, operand2: Tensor) =
+      let x = min(operand1.data.high, operand2.data.high)
+      for i in 0..x:
+         dest.data[i] = op(operand1.data[i], operand2.data[i])
 
    proc name*(dest, operand: Tensor, count: int) =
       for i in 0..(count-1):
@@ -118,10 +123,10 @@ template defop(name, op: untyped) =
             dest.data[i] = op(dest.data[i], operand.data[at])
             inc(at)
 
-defop(`add`, `+`)
-defop(`mul`, `*`)
-defop(`divide`, `/`)
-defop(`sub`, `-`)
+defop(`add`, `set_add`, `+`)
+defop(`mul`, `set_mul`, `*`)
+defop(`divide`, `set_divide`, `/`)
+defop(`sub`, `set_sub`, `-`)
 
 proc tanh*(self: Tensor, count: int) =
    ## hyperbolic tangent
