@@ -1,12 +1,10 @@
 
 import ../random/random
 import ../tensor
+import layer
 
 type
-   TanhLayer* = ref object
-      values, weights: Tensor
-      scratch: array[0..2, Tensor]
-      input_count, value_count, private_weight_count: int
+   TanhLayer* = ref object of Layer
 
 method open*(self: TanhLayer) {.base.} =
    self.values = make_tensor(self.value_count)
