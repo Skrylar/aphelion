@@ -178,3 +178,6 @@ proc despread_sum*(self, dest: Tensor) =
          dest.data[i] = dest.data[i] + self.data[at]
          inc(at)
 
+proc len*(self: Tensor): int =
+  return self.data.len
+
