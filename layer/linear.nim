@@ -27,7 +27,7 @@ method forward*(self: LinearLayer, inputs: Tensor) {.base.} =
 
 method gradient*(self: LinearLayer, inputs, deltas, total: Tensor) {.base.} =
    # get the big stuff
-   deltas.mul(inputs)
+   self.scratch[0].set_mul(deltas, inputs)
    total.add(deltas)
 
 method private_gradient*(self: LinearLayer, inputs, deltas, total: Tensor) {.base.} =

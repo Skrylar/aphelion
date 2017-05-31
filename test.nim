@@ -39,6 +39,10 @@ assert layer != nil
 var layer2 = make_tanh_layer(3, 3);
 assert layer2 != nil
 
+for i in 0..high(scratch):
+   layer.scratch[i] = scratch[i]
+   layer2.scratch[i] = scratch[i]
+
 # initialize
 layer.randomize_weights randomizer
 layer2.randomize_weights randomizer

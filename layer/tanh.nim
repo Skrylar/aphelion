@@ -23,9 +23,9 @@ method forward*(self: TanhLayer, inputs: Tensor) {.base.} =
 
 method gradient*(self: TanhLayer, inputs, deltas, total: Tensor) {.base.} =
    # get the big stuff
-   deltas.mul(inputs)
-   deltas.tanh_deriv
-   total.add(deltas)
+   self.scratch[0].set_mul(deltas, inputs)
+   self.scratch[0].tanh_deriv
+   total.add(self.scratch[0])
 
 method private_gradient*(self: TanhLayer, inputs, deltas, total: Tensor) {.base.} =
   discard
