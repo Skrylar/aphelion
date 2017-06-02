@@ -168,7 +168,7 @@ proc hsum*(self: Tensor): float32 =
    for i in 0..self.data.high:
       result = result + self.data[i]
 
-proc despread_sum*(self, dest: Tensor) =
+proc weight_sum*(self, dest: Tensor, weights, values: int) =
    ## takes a tensor of weights and sums those in to a smaller operand; so
    ## if 'self' is 10 weights and 5 for each neuron, the operand will have
    ## a length of two, and be filled with the sums of those weights. this
@@ -176,15 +176,18 @@ proc despread_sum*(self, dest: Tensor) =
 
    assert(self != nil)
    assert(dest != nil)
-   assert((self.data.len %% dest.data.len) == 0)
+   assert((values %% weights) == 0)
 
-   var stripe = self.data.len /% dest.data.len
+   var stripe = weights /% values
    var at = 0
 
-   for i in 0..dest.data.high:
+   for i in 0..(values - 1):
       for j in 0..(stripe-1):
          dest.data[i] = dest.data[i] + self.data[at]
          inc(at)
+
+proc weight_sum*(self, dest: Tensor) =
+   weight_sum(self, dest, self.len, dest.len)
 
 proc len*(self: Tensor): int =
   return self.data.len
