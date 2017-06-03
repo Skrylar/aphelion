@@ -73,8 +73,14 @@ proc set*(self, other: Tensor) =
 template set_at*(self: Tensor, pos: int, value: float) =
   self.data[pos] = value
 
-template get_at*(self: Tensor, pos: int, value: float): float =
+template `[]=`*(self: Tensor, pos: int, value: float) =
+   set_at(self, pos, value)
+
+template get_at*(self: Tensor, pos: int): float =
   self.data[pos]
+
+template `[]`*(self: Tensor, pos: int): float =
+   get_at(self, pos)
 
 proc max*(self: Tensor, operand: float32) =
    assert(self != nil)
