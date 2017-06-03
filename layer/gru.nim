@@ -41,7 +41,7 @@ method close*(self: GruLayer) {.base.} =
 method forward*(self: GruLayer, inputs: Tensor) {.base.} =
    self.hidden.set(self.values)
 
-   inputs.set_spread(self.weights, self.values)
+   set_spread(inputs, self.weights, self.values)
 
    for i in 0..2:
       assert(self.scratch[i] != nil)
