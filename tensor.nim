@@ -27,6 +27,7 @@ proc copy*(dest, source: Tensor, dest_offset, source_offset, length: int) =
     dest.data[i] = source.data[x]
     inc(x)
 
+# XXX make destination the first param on these for consistency
 proc spread*(source, weights, destination: Tensor) =
    ## A very basic form of convolution, used to carry inputs through
    ## weights and in to an output.

@@ -1,16 +1,14 @@
 
 import ../random/random
 import ../tensor
+import layer
 
 type
-   GruLayer* = ref object
-      values, weights, hidden, reset_weights, reset_hidden_weights,
+   GruLayer* = ref object of Layer
+      hidden, reset_weights, reset_hidden_weights,
          update_weights, update_hidden_weights, hhat_weights: Tensor
 
-      scratch: array[0..2, Tensor]
-      input_count, value_count, private_weight_count: int
-
-method open*(self: GruLayer) {.base.} =
+method open*(self: GruLayer) =
    self.values         =  make_tensor(self.value_count)
    assert(self.values  != nil)
    self.weights        =  make_tensor(self.value_count * self.input_count)
@@ -28,7 +26,7 @@ method open*(self: GruLayer) {.base.} =
    self.hhat_weights                 =  make_tensor(self.value_count)
    assert(self.hhat_weights          != nil)
 
-method close*(self: GruLayer) {.base.} =
+method close*(self: GruLayer) =
    self.values                = nil
    self.weights               = nil
    self.hidden                = nil
@@ -38,7 +36,7 @@ method close*(self: GruLayer) {.base.} =
    self.update_hidden_weights = nil
    self.hhat_weights          = nil
 
-method forward*(self: GruLayer, inputs: Tensor) {.base.} =
+method forward*(self: GruLayer, inputs: Tensor) =
    self.hidden.set(self.values)
 
    set_spread(inputs, self.weights, self.values)
@@ -72,12 +70,12 @@ method forward*(self: GruLayer, inputs: Tensor) {.base.} =
    self.values.set_mul(self.scratch[1], self.hidden)
    self.values.add(self.scratch[2])
 
-method gradient*(self: GruLayer, inputs, deltas, total: Tensor) {.base.} =
+method gradient*(self: GruLayer, inputs, deltas, total: Tensor) =
    # get the big stuff
-   self.scratch[0].mul_set(deltas, inputs)
+   self.scratch[0].set_mul(deltas, inputs)
    total.add(self.scratch[0])
 
-method private_gradient*(self: GruLayer, inputs, deltas, total: Tensor) {.base.} =
+method private_gradient*(self: GruLayer, inputs, deltas, total: Tensor) =
    # calculate amount of change necessary
    self.scratch[0].set self.values
    self.scratch[0].tanh_deriv
@@ -107,17 +105,17 @@ method private_gradient*(self: GruLayer, inputs, deltas, total: Tensor) {.base.}
    # pack hidden reset weight
    total.add(self.scratch[1], self.value_count*4, 0, self.value_count)
 
-method propagate*(self: GruLayer, updates: Tensor) {.base.} =
+method propagate*(self: GruLayer, updates: Tensor) =
    self.weights.sub(updates)
 
-method private_propagate*(self: GruLayer, updates: Tensor) {.base.} =
+method private_propagate*(self: GruLayer, updates: Tensor) =
    self.reset_weights.sub(updates, 0, 0, self.value_count)
    self.reset_hidden_weights.sub(updates, 0, self.value_count, self.value_count)
    self.update_weights.sub(updates, 0, self.value_count*2, self.value_count)
    self.update_hidden_weights.sub(updates, 0, self.value_count*3, self.value_count)
    self.hhat_weights.sub(updates, 0, self.value_count*4, self.value_count)
 
-method randomize_weights*(self: GruLayer, rng: Random) {.base.} =
+method randomize_weights*(self: GruLayer, rng: Random) =
    for i in 0..(self.value_count - 1):
       self.weights.set_at(i, rng.next_float)
       self.reset_weights.set_at(i, rng.next_float)
