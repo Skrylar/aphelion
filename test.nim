@@ -15,8 +15,9 @@ var net = make_simple_network(3)
 net.add_linear_layer(3)
 net.add_tanh_layer(3)
 
-net.randomize_weights(randomizer)
+net.auto_scratch_tensors
 net.create_gradient_map
+net.randomize_weights(randomizer)
 
 # create the network
 var input = make_tensor(3)
