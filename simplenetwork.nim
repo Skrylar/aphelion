@@ -14,53 +14,28 @@ const
 
 type
    SimpleNetwork* = ref object
+      inputs*: Tensor
       layers*: seq[Layer]
-      public_errors*, private_errors*: GradientMap
-      total_public_errors*, total_private_errors*: GradientMap
 
-      scratch: array[0..ScratchTensorHigh, Tensor]
+      scratch*: array[0..ScratchTensorHigh, Tensor]
 
-      inputs*: int
-
-proc make_simple_network*(inputs: int): SimpleNetwork =
+proc make_simple_network*(inputs: Tensor): SimpleNetwork =
    ## Creates and returns a simple network object.
    result = SimpleNetwork()
    newseq(result.layers, 0)
-   newseq(result.public_errors, 0)
-   newseq(result.private_errors, 0)
-   newseq(result.total_public_errors, 0)
-   newseq(result.total_private_errors, 0)
    result.inputs = inputs
 
-proc forward*(self: SimpleNetwork, input: Tensor) =
+proc forward*(self: SimpleNetwork) =
    ## Runs a tensor of values forward through the network.
    if self.layers.len < 1: return
-   self.layers[0].forward(input)
-   if self.layers.len > 1:
-      for i in 1..self.layers.high:
-         self.layers[i].forward(self.layers[i - 1].values)
+   self.layers[0].forward(self.inputs)
+   for i in 1..self.layers.high:
+      self.layers[i].forward(self.layers[i - 1].values)
 
 proc randomize_weights*(self: SimpleNetwork, rng: Random) =
    ## Randomizes all weights in the network.
    for layer in self.layers:
       layer.randomize_weights(rng)
-
-proc create_gradient_map*(self: SimpleNetwork) =
-   # adjust gradient sequences
-   setLen(self.public_errors        , self.layers.len)
-   setLen(self.private_errors       , self.layers.len)
-   setLen(self.total_public_errors  , self.layers.len)
-   setLen(self.total_private_errors , self.layers.len)
-
-   template hackysack(x, y, z: untyped) =
-      if (x[y] == nil) or (x[y].len != z):
-         x[y] = make_tensor(z)
-
-   for i in 0..self.layers.high:
-      hackysack(self.public_errors        , i , self.layers[i].value_count)
-      hackysack(self.private_errors       , i , self.layers[i].value_count)
-      hackysack(self.total_public_errors  , i , self.layers[i].value_count)
-      hackysack(self.total_private_errors , i , self.layers[i].value_count)
 
 proc most_weights*(self: SimpleNetwork): int =
    for layer in self.layers:
@@ -91,7 +66,7 @@ proc last_output_count(self: SimpleNetwork): int =
    ## Returns the number of outputs at the last layer of the network; or
    ## the number of inputs to the network if there are no layers.
    if self.layers.len < 1:
-      return self.inputs
+      return self.inputs.len
    else:
       return self.layers[self.layers.high].values.len
 

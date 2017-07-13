@@ -41,22 +41,11 @@ proc spread*(source, weights, destination: Tensor) =
    assert(destination != nil);
    assert(weights.data.len >= (source.data.len * destination.data.len))
 
+   var x = 0
    for i in 0..destination.data.high:
-      for j in 0..destination.data.high:
-         destination.data[i] += source.data[j] *
-            weights.data[(i * destination.data.len) + j]
-
-proc set_spread*(source, weights, destination: Tensor) =
-   assert(source      != nil);
-   assert(weights     != nil);
-   assert(destination != nil);
-
-   assert(weights.data.len >= (source.data.len * destination.data.len))
-
-   for i in 0..destination.data.high:
-      for j in 0..destination.data.high:
-         destination.data[i] = source.data[j] *
-            weights.data[(i * destination.data.len) + j]
+      for j in 0..source.data.high:
+         destination.data[i] = destination.data[i] + (source.data[j] * weights.data[x])
+         inc x
 
 proc set*(self: Tensor, operand: float32) =
    for i in 0..self.data.high:

@@ -38,9 +38,9 @@ type
       ## Uses mean squared errors to determine the error from a final
       ## output layer and the correct labels.
 
-method loss*(value_layer: Layer, goals: Tensor): float32 =
+method loss*(self: MseCriterion, value_layer: Layer, goals: Tensor): float32 =
    result = mse(value_layer.scratch[0], value_layer.values, goals)
 
-method derive*(value_layer: Layer, goals, output_error: Tensor) =
+method derive*(self: MseCriterion, value_layer: Layer, goals, output_error: Tensor) =
    mse_derivs(output_error, value_layer.values, goals)
 

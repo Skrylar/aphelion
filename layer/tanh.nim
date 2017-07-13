@@ -17,7 +17,7 @@ method close*(self: TanhLayer) =
    self.weights = nil
 
 method forward*(self: TanhLayer, inputs: Tensor) =
-   inputs.set_spread(self.weights, self.values)
+   inputs.spread(self.weights, self.values)
    self.values.divide(float32(inputs.len))
    self.values.tanh
 
