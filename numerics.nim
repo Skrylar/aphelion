@@ -22,3 +22,30 @@ when isMainModule:
   test "Rescale":
     check(within(rescale(0.5, 0.0, 1.0, 5.0, 10.0), 7.5, 0.1) == true)
 
+proc sum*[T](input: openarray[T]): T =
+  ## Computes the sum of a given array.
+  result = 0.T
+  for value in input:
+    result = result + value
+
+when isMainModule:
+  test "Sum":
+    let integers = [1, 2, 4, 8]
+    let reals = [1.0, 2.0, 4.0, 8.0]
+    check sum(integers) == 15
+    check within(sum(reals), 15.0, 0.1) == true
+
+proc average*[T](input: openarray[T]): T =
+  ## Computes the sum of a given array.
+  result = 0.T
+  for value in input:
+    result = result + value
+  result = (result / input.len.T).T
+
+template mean*[T](input: openarray[T]): T =
+  average(input)
+
+when isMainModule:
+  test "Average":
+    let reals = [1.0, 2.0, 4.0, 8.0]
+    check within(average(reals), 3.75, 0.1) == true
