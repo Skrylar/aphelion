@@ -1,4 +1,5 @@
 
+import math
 import tensor
 import criterion/meansquarederrors
 import random/cmwc
@@ -33,11 +34,6 @@ net.randomize_weights(randomizer)
 
 bp.init(net)
 
-bp.alpha   = 0.000000001
-bp.beta1   = 0.9
-bp.beta2   = 0.0999
-bp.epsilon = 0.000000001
-
 input[0] = 0.0
 input[1] = 0.0
 input[2] = 1.0
@@ -48,9 +44,11 @@ goals[2] = 0.0
 
 var best = 999999999.0
 
-for i in 0..1000:
+for i in 0..1000000:
   net.forward
   let loss = mse.loss(net.layers[net.layers.high], goals)
+  if loss.classify == fcNaN:
+    break
   echo "Loss: ", loss
   if loss < best: best = loss
   bp.clear_gradients

@@ -186,6 +186,27 @@ proc weight_sum*(dest, weights: Tensor, weight_count, value_count: int) =
          dest.data[s] = dest.data[s] + weights.data[at]
          inc(at)
 
+proc despread*(dest, weights, values: Tensor, weight_count, value_count: int) =
+   assert(dest != nil)
+   assert(weights != nil)
+   assert((weight_count %% value_count) == 0)
+
+   var stripe_length = weight_count /% valuecount
+   var stripes = weight_count /% stripe_length
+   var at = 0
+
+   # calculate layer weighting
+   for s in 0..(stripes - 1):
+      for i in 0..(stripe_length - 1):
+         dest.data[s] = dest.data[s] + weights.data[at]
+         inc(at)
+
+   # now mix with the values of the value tensor
+   let total = hsum(values)
+   at = 0
+   for s in 0..(stripes - 1):
+      dest.data[s] = dest.data[s] * total
+
 proc weight_sum*(dest, weights: Tensor) =
    weight_sum(dest, weights, dest.len, weights.len)
 

@@ -48,7 +48,7 @@ method init*(self: AdamBackpropagator, net: SimpleNetwork) =
     self.moment_xb[x] = make_tensor(net.layers[x].weights.len)
 
 {.this:self.}
-  
+
 proc propagate*(self: AdamBackpropagator, network: SimpleNetwork) =
   inc(t)
   for i in 0..network.layers.high:

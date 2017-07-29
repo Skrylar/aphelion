@@ -67,6 +67,9 @@ proc backward*(self: Backpropagator, goals: Tensor,
 
       # calculate gradients of middle layers
       for x in countdown(last_layer_index - 1, 1):
+         # now moderate gradients by next layer's weight values
+         despread(self.public_errors[x], net.layers[x+1].weights, net.layers[x+1].values, net.layers[x + 1].weights.len, net.layers[x+1].values.len)
+
          # perform gradient calculation
          net.layers[x].gradient(
             net.layers[x - 1].values,
@@ -78,9 +81,7 @@ proc backward*(self: Backpropagator, goals: Tensor,
             self.private_errors[x],
             self.total_private_errors[x])
 
-         # now moderate gradients by next layer's weight values
-         weight_sum(net.scratch[0], net.layers[x + 1].weights, net.layers[x + 1].weights.len, net.layers[x].values.len)
-         self.public_errors[x].mul(net.scratch[0], net.layers[x].values.len)
+      despread(self.public_errors[0], net.layers[1].weights, net.layers[1].values, net.layers[1].weights.len, net.layers[1].values.len)
       
       # calculate gradients on the final layer
       net.layers[0].gradient(net.inputs,
@@ -90,10 +91,6 @@ proc backward*(self: Backpropagator, goals: Tensor,
       net.layers[0].private_gradient(net.inputs,
          self.private_errors[0],
          self.total_private_errors[0])
-
-      if net.layers.high > 1:
-         weight_sum(net.scratch[0], net.layers[1].weights, net.layers[1].weights.len, net.layers[0].values.len)
-         self.public_errors[0].mul(net.scratch[0], net.layers[0].values.len)
 
 proc sgd*(self: Backpropagator, rate: float, net: SimpleNetwork) =
    # TODO don't multiply scratch space that isn't used by weights
