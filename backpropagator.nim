@@ -28,12 +28,15 @@ method create_gradient_map*(self: Backpropagator, net: SimpleNetwork) {.base.} =
       hackysack(self.total_public_errors  , i , net.layers[i].value_count)
       hackysack(self.total_private_errors , i , net.layers[i].value_count)
 
-method init*(self: Backpropagator; net: SimpleNetwork) {.base.} =
+proc init_backpropagator*(self: Backpropagator; net: SimpleNetwork) =
    newseq(self.public_errors, 0)
    newseq(self.private_errors, 0)
    newseq(self.total_public_errors, 0)
    newseq(self.total_private_errors, 0)
    self.create_gradient_map(net)
+
+method init*(self: Backpropagator; net: SimpleNetwork) {.base.} =
+  init_backpropagator self, net
 
 proc clear_gradients*(self: Backpropagator) =
    ## Clears any gradients that have accumulated between calls to
@@ -72,7 +75,7 @@ proc backward*(self: Backpropagator, goals: Tensor,
 
          net.layers[x].private_gradient(
             net.layers[x - 1].values,
-            self.public_errors[x],
+            self.private_errors[x],
             self.total_private_errors[x])
 
          # now moderate gradients by next layer's weight values
@@ -86,7 +89,7 @@ proc backward*(self: Backpropagator, goals: Tensor,
 
       net.layers[0].private_gradient(net.inputs,
          self.private_errors[0],
-         self.total_public_errors[0])
+         self.total_private_errors[0])
 
       if net.layers.high > 1:
          weight_sum(net.scratch[0], net.layers[1].weights, net.layers[1].weights.len, net.layers[0].values.len)

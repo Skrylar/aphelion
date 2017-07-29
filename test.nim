@@ -6,6 +6,7 @@ import layer/linear
 import layer/tanh
 import simplenetwork
 import backpropagator
+import backpropagation/adam
 
 var randomizer = Cmwc()
 randomizer.seed(1337)
@@ -19,7 +20,7 @@ var goals = make_tensor(3)
 assert goals != nil
 
 var net = make_simple_network(input)
-var bp = Backpropagator()
+var bp = AdamBackpropagator()
 var mse = MseCriterion()
 
 net.add_linear_layer(10)
@@ -32,22 +33,33 @@ net.randomize_weights(randomizer)
 
 bp.init(net)
 
-input[0] = 0.0
-input[1] = 1.0
-input[2] = 0.0
+bp.alpha   = 0.000000001
+bp.beta1   = 0.9
+bp.beta2   = 0.0999
+bp.epsilon = 0.000000001
 
-goals[0] = 0.0
+input[0] = 0.0
+input[1] = 0.0
+input[2] = 1.0
+
+goals[0] = 1.0
 goals[1] = 1.0
 goals[2] = 0.0
 
+var best = 999999999.0
+
 for i in 0..1000:
   net.forward
-  echo "Loss: ", mse.loss(net.layers[net.layers.high], goals)
+  let loss = mse.loss(net.layers[net.layers.high], goals)
+  echo "Loss: ", loss
+  if loss < best: best = loss
   bp.clear_gradients
-  bp.backward(goals, mse, net)
-  bp.sgd(0.00005, net)
+  bp.backward goals, mse, net
+  bp.propagate net
+  #bp.sgd(0.00005, net)
 
-echo "Loss ", mse.loss(net.layers[net.layers.high], goals)
+echo "Loss: ", mse.loss(net.layers[net.layers.high], goals)
+echo "Best: ", best
 net.forward
 echo repr net.layers[net.layers.high]
 
