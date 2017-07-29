@@ -6,18 +6,11 @@ import tensor
 import layer/layer
 
 type
-   Backpropagator* = ref object
+   Backpropagator* = ref object {.inheritable.}
       public_errors*, private_errors*: GradientMap
       total_public_errors*, total_private_errors*: GradientMap
 
-proc make_backpropagator*(): Backpropagator =
-   result = Backpropagator()
-   newseq(result.public_errors, 0)
-   newseq(result.private_errors, 0)
-   newseq(result.total_public_errors, 0)
-   newseq(result.total_private_errors, 0)
-
-proc create_gradient_map*(self: Backpropagator, net: SimpleNetwork) =
+method create_gradient_map*(self: Backpropagator, net: SimpleNetwork) {.base.} =
    ## Prepares the backpropagator to receive per-layer error values from
    ## a given network.
    setLen(self.public_errors        , net.layers.len)
@@ -35,7 +28,11 @@ proc create_gradient_map*(self: Backpropagator, net: SimpleNetwork) =
       hackysack(self.total_public_errors  , i , net.layers[i].value_count)
       hackysack(self.total_private_errors , i , net.layers[i].value_count)
 
-proc init*(self: Backpropagator, net: SimpleNetwork) =
+method init*(self: Backpropagator; net: SimpleNetwork) {.base.} =
+   newseq(self.public_errors, 0)
+   newseq(self.private_errors, 0)
+   newseq(self.total_public_errors, 0)
+   newseq(self.total_private_errors, 0)
    self.create_gradient_map(net)
 
 proc clear_gradients*(self: Backpropagator) =

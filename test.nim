@@ -19,12 +19,13 @@ var goals = make_tensor(3)
 assert goals != nil
 
 var net = make_simple_network(input)
-var bp = make_backpropagator()
+var bp = Backpropagator()
 var mse = MseCriterion()
 
 net.add_linear_layer(10)
 net.add_tanh_layer(3)
 net.add_linear_layer(3)
+net.add_tanh_layer(3)
 
 net.auto_scratch_tensors
 net.randomize_weights(randomizer)
@@ -39,7 +40,7 @@ goals[0] = 0.0
 goals[1] = 1.0
 goals[2] = 0.0
 
-for i in 0..5:
+for i in 0..1000:
   net.forward
   echo "Loss: ", mse.loss(net.layers[net.layers.high], goals)
   bp.clear_gradients
