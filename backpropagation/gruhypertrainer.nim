@@ -36,12 +36,14 @@ proc randomize_weights*(self: GruHypertrainer) =
   randomizer.seed(1337)
   hypertrainer.randomize_weights randomizer
 
-proc init*(self: var GruHypertrainer; net: SimpleNetwork) =
+method init*(self: GruHypertrainer; net: SimpleNetwork) =
   ## Initializes the hyper-trainer to run on the supplied network.
   init_backpropagator(self, net)
 
-  inputs = make_tensor 1
-  goals = make_tensor 1
+  inputs = make_tensor(1)
+  goals = make_tensor(1)
+
+  update_cache = make_tensor(net.most_weights)
 
   # special training network
   hypertrainer = make_simple_network(inputs)
@@ -53,19 +55,24 @@ proc init*(self: var GruHypertrainer; net: SimpleNetwork) =
   hypertrainer.add_linear_layer(1)
 
   # now randomize the net
+  hypertrainer.auto_scratch_tensors()
   self.randomize_weights()
 
+  backprop = Backpropagator()
   backprop.init hypertrainer
   mse = MseCriterion()
 
-  # TODO create gradient maps
-
   # create hidden value map
-  newseq(hidden, net.layers.len)
-  for c in 0..net.layers.high:
-    newseq(hidden[c], net.layers[c].weights.len)
-    for j in 0..net.layers[c].weights.len:
+  newseq(hidden, total_public_errors.len)
+  for c in 0..(total_public_errors.len-1):
+    newseq(hidden[c], total_public_errors[c].len)
+    for j in 0..(total_public_errors[c].len - 1):
       hidden[c][j] = (a: 0.0, b: 0.0)
+  newseq(hidden_private, total_private_errors.len)
+  for c in 0..(total_private_errors.len-1):
+    newseq(hidden_private[c], total_private_errors[c].len)
+    for j in 0..(total_private_errors[c].len-1):
+      hidden_private[c][j] = (a: 0.0, b: 0.0)
 
 proc propagate*(self: GruHypertrainer; supervised: SimpleNetwork) =
   ## Makes corrections to a neural network based on each neuron's
@@ -77,15 +84,15 @@ proc propagate*(self: GruHypertrainer; supervised: SimpleNetwork) =
     for j in 0..hidden[i].high:
       # unbox coordinate cells to our neural network
       let cells = hidden[i][j]
-      cast[GruLayer](supervised.layers[0]).hidden[0] = cells.a
-      cast[GruLayer](supervised.layers[3]).hidden[0] = cells.b
+      hypertrainer.layers[0].GruLayer.hidden[0] = cells.a
+      hypertrainer.layers[3].GruLayer.hidden[0] = cells.b
       # calculate adjustment for the neuron at this coordinate
-      supervised.inputs[0] = total_public_errors[i][j]
-      supervised.forward()
-      update_cache[j] = supervised.output.values[0]
+      inputs[0] = total_public_errors[i][j]
+      hypertrainer.forward()
+      update_cache[j] = hypertrainer.output.values[0]
       # box new coordinate cells
-      let new_cells = (a: cast[GruLayer](supervised.layers[0]).hidden[0],
-        b: cast[GruLayer](supervised.layers[3]).hidden[0])
+      let new_cells = (a: hypertrainer.layers[0].GruLayer.hidden[0],
+        b: hypertrainer.layers[3].GruLayer.hidden[0])
       hidden[i][j] = new_cells
     # push update cache to the layer
     supervised.layers[i].propagate(update_cache)
@@ -93,15 +100,15 @@ proc propagate*(self: GruHypertrainer; supervised: SimpleNetwork) =
     for j in 0..hidden_private[i].high:
       # unbox coordinate cells to our neural network
       let cells = hidden_private[i][j]
-      cast[GruLayer](supervised.layers[0]).hidden[0] = cells.a
-      cast[GruLayer](supervised.layers[3]).hidden[0] = cells.b
+      hypertrainer.layers[0].GruLayer.hidden[0] = cells.a
+      hypertrainer.layers[3].GruLayer.hidden[0] = cells.b
       # calculate adjustment for the neuron at this coordinate
-      supervised.inputs[0] = total_private_errors[i][j]
-      supervised.forward()
-      update_cache[j] = supervised.output.values[0]
+      inputs[0] = total_public_errors[i][j]
+      hypertrainer.forward()
+      update_cache[j] = hypertrainer.output.values[0]
       # box new coordinate cells
-      let new_cells = (a: cast[GruLayer](supervised.layers[0]).hidden[0],
-        b: cast[GruLayer](supervised.layers[3]).hidden[0])
+      let new_cells = (a: hypertrainer.layers[0].GruLayer.hidden[0],
+        b: hypertrainer.layers[3].GruLayer.hidden[0])
       hidden_private[i][j] = new_cells
     # push update cache to the layer
     supervised.layers[i].private_propagate(update_cache)
@@ -119,9 +126,8 @@ proc feedback*(self: GruHypertrainer; net: SimpleNetwork) =
     error = error + total_private_errors[total_private_errors.high][x]
 
   # update hypertrainer
-  backprop.clear_gradients()
-  
   goals[0] = error
-  backprop.backward goals, mse, net
-  backprop.sgd 0.005, net
+  backprop.clear_gradients()
+  backprop.backward goals, mse, hypertrainer
+  backprop.sgd 0.005, hypertrainer
 

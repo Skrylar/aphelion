@@ -24,9 +24,9 @@ method create_gradient_map*(self: Backpropagator, net: SimpleNetwork) {.base.} =
 
    for i in 0..net.layers.high:
       hackysack(self.public_errors        , i , net.layers[i].value_count)
-      hackysack(self.private_errors       , i , net.layers[i].value_count)
+      hackysack(self.private_errors       , i , net.layers[i].private_weight_count)
       hackysack(self.total_public_errors  , i , net.layers[i].value_count)
-      hackysack(self.total_private_errors , i , net.layers[i].value_count)
+      hackysack(self.total_private_errors , i , net.layers[i].private_weight_count)
 
 proc init_backpropagator*(self: Backpropagator; net: SimpleNetwork) =
    newseq(self.public_errors, 0)

@@ -8,6 +8,7 @@ import layer/tanh
 import simplenetwork
 import backpropagator
 import backpropagation/adam
+import backpropagation/gruhypertrainer
 
 var randomizer = Cmwc()
 randomizer.seed(1337)
@@ -21,7 +22,7 @@ var goals = make_tensor(3)
 assert goals != nil
 
 var net = make_simple_network(input)
-var bp = AdamBackpropagator()
+var bp = GruHypertrainer()
 var mse = MseCriterion()
 
 net.add_linear_layer(10)
@@ -54,6 +55,7 @@ for i in 0..1000000:
   bp.clear_gradients
   bp.backward goals, mse, net
   bp.propagate net
+  bp.feedback net
   #bp.sgd(0.00005, net)
 
 echo "Loss: ", mse.loss(net.layers[net.layers.high], goals)

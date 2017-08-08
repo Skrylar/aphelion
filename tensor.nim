@@ -117,10 +117,12 @@ template defop(name, set_name, op: untyped) =
 
    proc name*(dest, operand: Tensor,
       dest_offset, source_offset, count: int) =
+         var to = dest_offset
          var at = source_offset
-         for i in dest_offset..((source_offset+count)-1):
-            dest.data[i] = op(dest.data[i], operand.data[at])
+         for i in 0..(count-1):
+            dest.data[to] = op(dest.data[to], operand.data[at])
             inc(at)
+            inc(to)
 
 defop(`add`, `set_add`, `+`)
 defop(`mul`, `set_mul`, `*`)
