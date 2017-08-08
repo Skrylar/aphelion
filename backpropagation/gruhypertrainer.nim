@@ -5,6 +5,7 @@ import ../criterion/meansquarederrors
 import ../simplenetwork
 import ../tensor
 import ../backpropagator
+import ../backpropagation/adam
 import ../layer/layer
 import ../layer/gru
 
@@ -23,7 +24,7 @@ type
     hidden*: seq[seq[tuple[a, b: float64]]]
     hidden_private*: seq[seq[tuple[a, b: float64]]]
     update_cache*: Tensor
-    backprop*: Backpropagator
+    backprop*: AdamBackpropagator
     inputs*: Tensor
     goals*: Tensor
     mse*: Criterion
@@ -58,7 +59,7 @@ method init*(self: GruHypertrainer; net: SimpleNetwork) =
   hypertrainer.auto_scratch_tensors()
   self.randomize_weights()
 
-  backprop = Backpropagator()
+  backprop = AdamBackpropagator()
   backprop.init hypertrainer
   mse = MseCriterion()
 
@@ -129,5 +130,6 @@ proc feedback*(self: GruHypertrainer; net: SimpleNetwork) =
   goals[0] = error
   backprop.clear_gradients()
   backprop.backward goals, mse, hypertrainer
-  backprop.sgd 0.005, hypertrainer
+  backprop.propagate hypertrainer
+  #backprop.sgd 0.005, hypertrainer
 

@@ -23,7 +23,7 @@ type
     update_cache*: Tensor ## Used to accumulate change values before passing them off to neuron layers.
 
 method init*(self: AdamBackpropagator, net: SimpleNetwork) =
-  self.Backpropagator.init_backpropagator net
+  procCall self.Backpropagator.init net
 
   # these are taken from the whitepaper; you may desire to change them
   self.t       = 0
@@ -44,8 +44,8 @@ method init*(self: AdamBackpropagator, net: SimpleNetwork) =
     self.moment_pb[x] = make_tensor(net.layers[x].weights.len)
     # TODO find out how many weights we really need, and save some
     # memory...
-    self.moment_xa[x] = make_tensor(net.layers[x].weights.len)
-    self.moment_xb[x] = make_tensor(net.layers[x].weights.len)
+    self.moment_xa[x] = make_tensor(net.layers[x].private_weight_count)
+    self.moment_xb[x] = make_tensor(net.layers[x].private_weight_count)
 
 {.this:self.}
 
@@ -79,7 +79,7 @@ proc propagate*(self: AdamBackpropagator, network: SimpleNetwork) =
 
       # update Vt
       var vt = (beta2 * moment_xb[i][j]) + ((1 - beta2) * squared(total_private_errors[i][j]))
-      moment_pb[i][j] = vt
+      moment_xb[i][j] = vt
 
       # hats
       var mhat = mt / (1 - pow(beta1, t.float64))
