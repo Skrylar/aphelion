@@ -19,6 +19,9 @@ type
 
       scratch*: array[0..ScratchTensorHigh, Tensor]
 
+template output*(net: SimpleNetwork): Layer =
+  net.layers[net.layers.high]
+
 proc make_simple_network*(inputs: Tensor): SimpleNetwork =
    ## Creates and returns a simple network object.
    result = SimpleNetwork()

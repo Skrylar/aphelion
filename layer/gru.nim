@@ -5,7 +5,7 @@ import layer
 
 type
    GruLayer* = ref object of Layer
-      hidden, reset_weights, reset_hidden_weights,
+      hidden*, reset_weights, reset_hidden_weights,
          update_weights, update_hidden_weights, hhat_weights: Tensor
 
 method open*(self: GruLayer) =
