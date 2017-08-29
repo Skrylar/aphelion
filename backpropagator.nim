@@ -55,19 +55,20 @@ proc backward*(self: Backpropagator, goals: Tensor,
          goals, self.public_errors[last_layer_index])
 
       # perform gradient calculation for front layer
-      #net.layers[last_layer_index].gradient(
-         #net.layers[last_layer_index - 1].values,
-         #self.public_errors[last_layer_index],
-         #self.total_public_errors[last_layer_index])
+      net.layers[last_layer_index].gradient(
+         net.layers[last_layer_index - 1].values,
+         self.public_errors[last_layer_index],
+         self.total_public_errors[last_layer_index])
 
-      #net.layers[last_layer_index].private_gradient(
-         #net.layers[last_layer_index - 1].values,
-         #self.public_errors[last_layer_index],
-         #self.total_private_errors[last_layer_index])
+      net.layers[last_layer_index].private_gradient(
+         net.layers[last_layer_index - 1].values,
+         self.private_errors[last_layer_index],
+         self.total_private_errors[last_layer_index])
 
       # calculate gradients of middle layers
       for x in countdown(last_layer_index - 1, 1):
          # now moderate gradients by next layer's weight values
+         self.public_errors[x].set(0)
          despread(self.public_errors[x], net.layers[x+1].weights, net.layers[x+1].values, net.layers[x + 1].weights.len, net.layers[x+1].values.len)
 
          # perform gradient calculation
@@ -81,6 +82,7 @@ proc backward*(self: Backpropagator, goals: Tensor,
             self.private_errors[x],
             self.total_private_errors[x])
 
+      self.public_errors[0].set(0)
       despread(self.public_errors[0], net.layers[1].weights, net.layers[1].values, net.layers[1].weights.len, net.layers[1].values.len)
       
       # calculate gradients on the final layer
