@@ -21,20 +21,24 @@ method close*(self: LinearLayer) =
    self.private_weights = nil
 
 method forward*(self: LinearLayer, inputs: Tensor) =
+   self.values.set(0)
    inputs.spread(self.weights, self.values)
-   self.values.divide(float32(inputs.len))
+   # NB: Not sure we actually need to do this
+   #self.values.divide(float32(inputs.len))
    self.values.add(self.private_weights)
 
 method gradient*(self: LinearLayer, inputs, deltas, total: Tensor) =
-   # get the big stuff
-   self.scratch[0].set_mul(deltas, inputs)
-   total.add(deltas)
+   # run inputs * weights to find the amount of error 
+   self.scratch[0].set(0)
+   deltas.spread(self.weights, self.scratch[0], self.values.len-1)
+   total.add(self.values)
 
 method private_gradient*(self: LinearLayer, inputs, deltas, total: Tensor) =
-   # fix up the private deltas
-   total.add(self.private_weights)
+   # update linear bias weight by the neuron's delta directly
+   total.add(deltas)
 
 method propagate*(self: LinearLayer, updates: Tensor) =
+   assert updates.len == self.weights.len
    self.weights.sub(updates)
 
 method private_propagate*(self: LinearLayer, updates: Tensor) =

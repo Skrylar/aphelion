@@ -72,8 +72,8 @@ method forward*(self: GruLayer, inputs: Tensor) =
 
 method gradient*(self: GruLayer, inputs, deltas, total: Tensor) =
    # get the big stuff
-   self.scratch[0].set_mul(deltas, inputs)
-   total.add(self.scratch[0])
+   #self.scratch[0].set_mul(deltas, inputs)
+   total.add(deltas)
 
 method private_gradient*(self: GruLayer, inputs, deltas, total: Tensor) =
    # calculate amount of change necessary

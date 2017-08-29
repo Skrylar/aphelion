@@ -22,13 +22,14 @@ var goals = make_tensor(3)
 assert goals != nil
 
 var net = make_simple_network(input)
-var bp = GruHypertrainer()
+#var bp = GruHypertrainer()
+var bp = AdamBackpropagator()
 var mse = MseCriterion()
 
-net.add_linear_layer(10)
-net.add_tanh_layer(3)
 net.add_linear_layer(3)
-net.add_tanh_layer(3)
+net.add_linear_layer(3)
+net.add_linear_layer(3)
+net.add_linear_layer(3)
 
 net.auto_scratch_tensors
 net.randomize_weights(randomizer)
@@ -45,7 +46,7 @@ goals[2] = 0.0
 
 var best = 999999999.0
 
-for i in 0..1000000:
+for i in 0..10000:
   net.forward
   let loss = mse.loss(net.layers[net.layers.high], goals)
   if loss.classify == fcNaN:
@@ -55,7 +56,7 @@ for i in 0..1000000:
   bp.clear_gradients
   bp.backward goals, mse, net
   bp.propagate net
-  bp.feedback net
+  #bp.feedback net
   #bp.sgd(0.00005, net)
 
 echo "Loss: ", mse.loss(net.layers[net.layers.high], goals)

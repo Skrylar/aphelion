@@ -42,7 +42,7 @@ proc randomize_weights*(self: SimpleNetwork, rng: Random) =
 
 proc most_weights*(self: SimpleNetwork): int =
    for layer in self.layers:
-      let lx = max(layer.value_count, layer.private_weight_count)
+      let lx = max(layer.value_count * layer.input_count, layer.private_weight_count)
       result = max(result, lx)
 
 proc auto_scratch_tensors*(self: SimpleNetwork) =

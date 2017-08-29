@@ -28,7 +28,7 @@ proc copy*(dest, source: Tensor, dest_offset, source_offset, length: int) =
     inc(x)
 
 # XXX make destination the first param on these for consistency
-proc spread*(source, weights, destination: Tensor) =
+proc spread*(source, weights, destination: Tensor; destHigh: int) =
    ## A very basic form of convolution, used to carry inputs through
    ## weights and in to an output.
    ##
@@ -39,13 +39,16 @@ proc spread*(source, weights, destination: Tensor) =
    assert(source      != nil);
    assert(weights     != nil);
    assert(destination != nil);
-   assert(weights.data.len >= (source.data.len * destination.data.len))
+   assert(weights.data.len >= (source.data.len * destHigh))
 
    var x = 0
-   for i in 0..destination.data.high:
+   for i in 0..destHigh:
       for j in 0..source.data.high:
          destination.data[i] = destination.data[i] + (source.data[j] * weights.data[x])
          inc x
+
+proc spread*(source, weights, destination: Tensor) =
+  spread(source, weights, destination, destination.data.high)
 
 proc set*(self: Tensor, operand: float32) =
    for i in 0..self.data.high:
@@ -195,11 +198,12 @@ proc despread*(dest, weights, values: Tensor, weight_count, value_count: int) =
 
    var stripe_length = weight_count /% valuecount
    var stripes = weight_count /% stripe_length
+
    var at = 0
 
    # calculate layer weighting
-   for s in 0..(stripes - 1):
-      for i in 0..(stripe_length - 1):
+   for s in 0..stripes - 1:
+      for i in 0..stripe_length - 1:
          dest.data[s] = dest.data[s] + weights.data[at]
          inc(at)
 
@@ -207,7 +211,8 @@ proc despread*(dest, weights, values: Tensor, weight_count, value_count: int) =
    let total = hsum(values)
    at = 0
    for s in 0..(stripes - 1):
-      dest.data[s] = dest.data[s] * total
+      dest.data[s] = dest.data[s] * values.data[at]
+      inc(at)
 
 proc weight_sum*(dest, weights: Tensor) =
    weight_sum(dest, weights, dest.len, weights.len)

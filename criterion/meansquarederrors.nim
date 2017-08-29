@@ -14,6 +14,7 @@ proc mse*(tmp, results, goals: Tensor): float32 =
    assert results != nil
    assert goals != nil
 
+   set(tmp, 0)
    set_sub(tmp, results, goals)
    mul(tmp, tmp)
    mul(tmp, 0.5)
@@ -27,6 +28,7 @@ proc mse_derivs*(dest, results, goals: Tensor) =
    assert results != nil
    assert goals != nil
 
+   set(dest, 0)
    set_sub(dest, results, goals)
 
 #_______________________________________________________________________

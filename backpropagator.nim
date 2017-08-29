@@ -23,9 +23,10 @@ method create_gradient_map*(self: Backpropagator, net: SimpleNetwork) {.base.} =
          x[y] = make_tensor(z)
 
    for i in 0..net.layers.high:
+      hackysack(self.total_public_errors  , i , net.layers[i].weights.len)
       hackysack(self.public_errors        , i , net.layers[i].value_count)
+
       hackysack(self.private_errors       , i , net.layers[i].private_weight_count)
-      hackysack(self.total_public_errors  , i , net.layers[i].value_count)
       hackysack(self.total_private_errors , i , net.layers[i].private_weight_count)
 
 proc init_backpropagator*(self: Backpropagator; net: SimpleNetwork) =
@@ -62,7 +63,7 @@ proc backward*(self: Backpropagator, goals: Tensor,
 
       net.layers[last_layer_index].private_gradient(
          net.layers[last_layer_index - 1].values,
-         self.private_errors[last_layer_index],
+         self.public_errors[last_layer_index],
          self.total_private_errors[last_layer_index])
 
       # calculate gradients of middle layers
@@ -79,7 +80,7 @@ proc backward*(self: Backpropagator, goals: Tensor,
 
          net.layers[x].private_gradient(
             net.layers[x - 1].values,
-            self.private_errors[x],
+            self.public_errors[x],
             self.total_private_errors[x])
 
       self.public_errors[0].set(0)
@@ -91,7 +92,7 @@ proc backward*(self: Backpropagator, goals: Tensor,
          self.total_public_errors[0])
 
       net.layers[0].private_gradient(net.inputs,
-         self.private_errors[0],
+         self.public_errors[0],
          self.total_private_errors[0])
 
 proc sgd*(self: Backpropagator, rate: float, net: SimpleNetwork) =
