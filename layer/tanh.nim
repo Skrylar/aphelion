@@ -17,13 +17,13 @@ method close*(self: TanhLayer) =
    self.weights = nil
 
 method forward*(self: TanhLayer, inputs: Tensor) =
+   self.values.set(0)
    inputs.spread(self.weights, self.values)
-   self.values.divide(float32(inputs.len))
    self.values.tanh
 
 method gradient*(self: TanhLayer, inputs, deltas, total: Tensor) =
-   # get the big stuff
-   self.scratch[0].set_mul(deltas, inputs)
+   self.scratch[0].set(0)
+   deltas.spread(self.weights, self.scratch[0], self.values.len-1)
    self.scratch[0].tanh_deriv
    total.add(self.scratch[0])
 

@@ -29,7 +29,7 @@ var mse = MseCriterion()
 net.add_linear_layer(3)
 net.add_linear_layer(3)
 net.add_linear_layer(3)
-net.add_linear_layer(3)
+net.add_tanh_layer(3)
 
 net.auto_scratch_tensors
 net.randomize_weights(randomizer)
