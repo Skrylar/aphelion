@@ -31,7 +31,7 @@ method gradient*(self: LinearLayer, inputs, deltas, total: Tensor) =
    # run inputs * weights to find the amount of error 
    self.scratch[0].set(0)
    deltas.spread(self.weights, self.scratch[0], self.values.len-1)
-   total.add(self.values)
+   total.add(self.scratch[0])
 
 method private_gradient*(self: LinearLayer, inputs, deltas, total: Tensor) =
    # update linear bias weight by the neuron's delta directly
