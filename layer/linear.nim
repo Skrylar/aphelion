@@ -38,7 +38,6 @@ method private_gradient*(self: LinearLayer, inputs, deltas, total: Tensor) =
    total.add(deltas)
 
 method propagate*(self: LinearLayer, updates: Tensor) =
-   assert updates.len == self.weights.len
    self.weights.sub(updates)
 
 method private_propagate*(self: LinearLayer, updates: Tensor) =
