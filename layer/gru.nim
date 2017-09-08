@@ -37,73 +37,69 @@ method close*(self: GruLayer) =
    self.hhat_weights          = nil
 
 method forward*(self: GruLayer, inputs: Tensor) =
+   # gather data from previous layer
+   self.values.set(0)
+   inputs.spread(self.weights, self.values, self.values.len-1)
+
+   # move values to previous timestep
+   # NB this feels wrong; seems like a gate should control this
    self.hidden.set(self.values)
 
-   spread(inputs, self.weights, self.values)
-
-   for i in 0..2:
-      assert(self.scratch[i] != nil)
-
-   # calculate value of the reset neuron input
+   # calculate reset gates
    self.scratch[0].set_mul(self.reset_weights, self.values)
    self.scratch[1].set_mul(self.reset_hidden_weights, self.hidden)
+   self.scratch[0].add(self.scratch[1])
+   self.scratch[0].tanh
 
-   self.scratch[0].add(self.scratch[1], self.hidden.len);
-   self.scratch[0].tanh(self.hidden.len);
-
-   # calculate value of the update neuron input
+   # calculate update gates
    self.scratch[1].set_mul(self.update_weights, self.values)
-   self.scratch[2].set_mul(self.update_hidden_weights, self.hidden)
+   self.scratch[2].set_mul(self.update_hidden_weights, self.values)
+   self.scratch[1].add(self.scratch[2])
+   self.scratch[1].tanh
 
-   self.scratch[1].add(self.scratch[2], self.hidden.len)
-   self.scratch[1].tanh(self.hidden.len)
-
-   # var hhat = Curves.Tanh(Values[i] + (Weights[x++] * (reset * Hidden[i])));
-   self.scratch[2].set_mul(self.scratch[0], self.hidden)
+   # calculate hhat
+   self.scratch[2].set_mul(self.hidden, self.scratch[0])
    self.scratch[2].mul(self.hhat_weights)
    self.scratch[2].add(self.values)
 
-   self.scratch[0].set(1.0)
-   self.scratch[0].sub(self.scratch[1])
-   self.scratch[2].mul(self.scratch[0])
-
-   self.values.set_mul(self.scratch[1], self.hidden)
-   self.values.add(self.scratch[2])
+   # calculate final output values
+   self.values.set(1)
+   self.values.sub(self.scratch[1])
+   self.values.mul(self.scratch[2])
+   self.scratch[0].set_mul(self.scratch[1], self.hidden)
+   self.values.add(self.scratch[0])
 
 method gradient*(self: GruLayer, inputs, deltas, total: Tensor) =
-   # get the big stuff
-   #self.scratch[0].set_mul(deltas, inputs)
-   total.add(deltas)
+   self.scratch[0].set(0)
+   deltas.spread(self.weights, self.scratch[0], self.values.len-1)
+   total.add(self.values)
 
 method private_gradient*(self: GruLayer, inputs, deltas, total: Tensor) =
-   # calculate amount of change necessary
-   self.scratch[0].set self.values
+   self.scratch[0].set(self.values)
    self.scratch[0].tanh_deriv
-   self.scratch[0].mul deltas
+   self.scratch[0].mul(deltas)
 
-   # delta * values
-   self.scratch[1].set_add self.scratch[0], self.values
-   # delta * hidden
-   self.scratch[2].set_add self.scratch[0], self.hidden
+   # reset and update gates have identical derivatives
+   self.scratch[1].set_mul(self.values, deltas)
+   self.scratch[2].set_mul(self.values, self.hidden)
 
-   # pack reset gates
+   # pack gate derivatives in output
    total.add(self.scratch[1], 0, 0, self.value_count)
-   total.add(self.scratch[2], self.value_count, 0, self.value_count)
+   total.add(self.scratch[2], 0, self.value_count, self.value_count)
+   total.add(self.scratch[1], 0, self.value_count*2, self.value_count)
+   total.add(self.scratch[2], 0, self.value_count*3, self.value_count)
 
-   # pack update gates
-   total.add(self.scratch[1], self.value_count*2, 0, self.value_count)
-   total.add(self.scratch[2], self.value_count*3, 0, self.value_count)
+   # calculating the new reset gate values
+   self.scratch[0].set_mul(self.scratch[2], self.hidden)
+   self.scratch[0].add(self.scratch[1])
+   self.scratch[0].tanh
 
-   # calculate weight delta to our hidden state
-   self.scratch[2].set_mul self.hidden, self.scratch[2]
-   self.scratch[1].set_mul self.values, self.scratch[1]
-   self.scratch[1].add self.scratch[2], self.value_count
-   self.scratch[1].tanh self.value_count
-   self.scratch[1].mul self.scratch[0], self.value_count
-   self.scratch[1].mul self.hidden
+   # then combine to create derivatives for last state's contribution
+   self.scratch[0].mul(self.hidden)
+   self.scratch[0].mul(deltas)
 
-   # pack hidden reset weight
-   total.add(self.scratch[1], self.value_count*4, 0, self.value_count)
+   # pack hhat derivatives in output
+   total.add(self.scratch[0], 0, self.value_count*4, self.value_count)
 
 method propagate*(self: GruLayer, updates: Tensor) =
    self.weights.sub(updates)
