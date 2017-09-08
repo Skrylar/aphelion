@@ -24,7 +24,7 @@ method forward*(self: TanhLayer, inputs: Tensor) =
 method gradient*(self: TanhLayer, inputs, deltas, total: Tensor) =
    self.scratch[0].set(0)
    deltas.spread(self.weights, self.scratch[0], self.values.len-1)
-   self.scratch[0].tanh_deriv
+   self.scratch[0].tanh_deriv()
    total.add(self.scratch[0])
 
 method private_gradient*(self: TanhLayer, inputs, deltas, total: Tensor) =
