@@ -39,7 +39,7 @@ method close*(self: GruLayer) =
 method forward*(self: GruLayer, inputs: Tensor) =
    # gather data from previous layer
    self.values.set(0)
-   inputs.spread(self.weights, self.values, self.values.len-1)
+   inputs.spread(self.weights, self.values)
 
    # move values to previous timestep
    # NB this feels wrong; seems like a gate should control this
@@ -49,18 +49,19 @@ method forward*(self: GruLayer, inputs: Tensor) =
    self.scratch[0].set_mul(self.reset_weights, self.values)
    self.scratch[1].set_mul(self.reset_hidden_weights, self.hidden)
    self.scratch[0].add(self.scratch[1])
-   self.scratch[0].tanh
+   self.scratch[0].sigmoid
 
    # calculate update gates
    self.scratch[1].set_mul(self.update_weights, self.values)
    self.scratch[2].set_mul(self.update_hidden_weights, self.values)
    self.scratch[1].add(self.scratch[2])
-   self.scratch[1].tanh
+   self.scratch[1].sigmoid
 
    # calculate hhat
    self.scratch[2].set_mul(self.hidden, self.scratch[0])
    self.scratch[2].mul(self.hhat_weights)
    self.scratch[2].add(self.values)
+   self.scratch[2].tanh
 
    # calculate final output values
    self.values.set(1)
@@ -70,9 +71,10 @@ method forward*(self: GruLayer, inputs: Tensor) =
    self.values.add(self.scratch[0])
 
 method gradient*(self: GruLayer, inputs, deltas, total: Tensor) =
+   # run inputs * weights to find the amount of error 
    self.scratch[0].set(0)
    deltas.spread(self.weights, self.scratch[0], self.values.len-1)
-   total.add(self.values)
+   total.add(self.scratch[0])
 
 method private_gradient*(self: GruLayer, inputs, deltas, total: Tensor) =
    self.scratch[0].set(self.values)
