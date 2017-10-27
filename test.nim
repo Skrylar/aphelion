@@ -4,11 +4,8 @@ import tensor
 import criterion/meansquarederrors
 import random/cmwc
 import layer/linear
-import layer/tanh
 import simplenetwork
 import backpropagator
-import backpropagation/adam
-import backpropagation/gruhypertrainer
 
 var randomizer = Cmwc()
 randomizer.seed(1337)
@@ -23,13 +20,14 @@ assert goals != nil
 
 var net = make_simple_network(input)
 #var bp = GruHypertrainer()
-var bp = AdamBackpropagator()
+#var bp = AdamBackpropagator()
+var bp = Backpropagator()
 var mse = MseCriterion()
 
 net.add_linear_layer(3)
 net.add_linear_layer(3)
 net.add_linear_layer(3)
-net.add_tanh_layer(3)
+net.add_linear_layer(3)
 
 net.auto_scratch_tensors
 net.randomize_weights(randomizer)
@@ -48,18 +46,18 @@ var best = 999999999.0
 
 for i in 0..10000:
   net.forward
-  let loss = mse.loss(net.layers[net.layers.high], goals)
+  let loss = mse.loss(net.scratch, net.layers[net.layers.high], goals)
   if loss.classify == fcNaN:
     break
   echo "Loss: ", loss
   if loss < best: best = loss
   bp.clear_gradients
-  bp.backward goals, mse, net
-  bp.propagate net
+  bp.backward goals, mse, net, net.scratch
+  #bp.propagate net
   #bp.feedback net
-  #bp.sgd(0.00005, net)
+  bp.sgd(0.00005, net, net.scratch)
 
-echo "Loss: ", mse.loss(net.layers[net.layers.high], goals)
+echo "Loss: ", mse.loss(net.scratch, net.layers[net.layers.high], goals)
 echo "Best: ", best
 net.forward
 echo repr net.layers[net.layers.high]

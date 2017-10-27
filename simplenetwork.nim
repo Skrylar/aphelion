@@ -5,11 +5,11 @@ import gradientmap
 
 import layer/layer
 import layer/linear
-import layer/tanh
-import layer/gru
+#import layer/tanh
+#import layer/gru
 
 const
-   ScratchTensorCount* = 3
+   ScratchTensorCount* = 5
    ScratchTensorHigh* = ScratchTensorCount - 1
 
 type
@@ -31,9 +31,9 @@ proc make_simple_network*(inputs: Tensor): SimpleNetwork =
 proc forward*(self: SimpleNetwork) =
    ## Runs a tensor of values forward through the network.
    if self.layers.len < 1: return
-   self.layers[0].forward(self.inputs)
+   self.layers[0].forward(self.inputs, self.scratch)
    for i in 1..self.layers.high:
-      self.layers[i].forward(self.layers[i - 1].values)
+      self.layers[i].forward(self.layers[i - 1].values, self.scratch)
 
 proc randomize_weights*(self: SimpleNetwork, rng: Random) =
    ## Randomizes all weights in the network.
@@ -42,7 +42,7 @@ proc randomize_weights*(self: SimpleNetwork, rng: Random) =
 
 proc most_weights*(self: SimpleNetwork): int =
    for layer in self.layers:
-      let lx = max(layer.value_count * layer.input_count, layer.private_weight_count)
+      let lx = layer.weights.len
       result = max(result, lx)
 
 proc auto_scratch_tensors*(self: SimpleNetwork) =
@@ -55,11 +55,6 @@ proc auto_scratch_tensors*(self: SimpleNetwork) =
       if (self.scratch[i] == nil) or (self.scratch[i].len < m):
          self.scratch[i] = make_tensor(m)
          assert self.scratch[i] != nil
-
-   # now assign the tensors
-   for layer in self.layers:
-      for i in 0..ScratchTensorHigh:
-         layer.scratch[i] = self.scratch[i]
 
 #_______________________________________________________________________
 # Layer adding tools
@@ -76,9 +71,9 @@ proc last_output_count(self: SimpleNetwork): int =
 proc add_linear_layer*(self: SimpleNetwork, outputs: int) =
    self.layers.add(make_linear_layer(self.last_output_count, outputs))
 
-proc add_tanh_layer*(self: SimpleNetwork, outputs: int) =
-   self.layers.add(make_tanh_layer(self.last_output_count, outputs))
+#proc add_tanh_layer*(self: SimpleNetwork, outputs: int) =
+   #self.layers.add(make_tanh_layer(self.last_output_count, outputs))
 
-proc add_gru_layer*(self: SimpleNetwork, outputs: int) =
-   self.layers.add(make_gru_layer(self.last_output_count, outputs))
+#proc add_gru_layer*(self: SimpleNetwork, outputs: int) =
+   #self.layers.add(make_gru_layer(self.last_output_count, outputs))
 

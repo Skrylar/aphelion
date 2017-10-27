@@ -208,7 +208,7 @@ proc despread*(dest, weights, values: Tensor, weight_count, value_count: int) =
          inc(at)
 
    # now mix with the values of the value tensor
-   let total = hsum(values)
+   #let total = hsum(values)
    at = 0
    for s in 0..(stripes - 1):
       dest.data[s] = dest.data[s] * values.data[at]

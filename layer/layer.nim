@@ -15,7 +15,7 @@ method forward*(self: Layer; inputs: Tensor; scratch: ScratchSet) {.base.} =
 method gradient*(self: Layer; inputs, deltas, total: Tensor; scratch: ScratchSet) {.base.} =
    discard
 
-method propagate*(self: Layer; updates: Tensor; scratch: ScratchSet) {.base.} =
+method propagate*(self: Layer; updates: Tensor) {.base.} =
    self.weights.sub(updates)
 
 method randomize_weights*(self: Layer, rng: Random) {.base.} =
