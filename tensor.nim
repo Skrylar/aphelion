@@ -12,7 +12,7 @@ proc make_tensor*(size: int): Tensor =
 # XXX i don't know what nim's equivalent to memcpy is
 # XXX i don't know if we can disable bounds checking on sequences (or
 # what voodoo is done to perform that.) this is performance sensitive
-# code, and we especially want 
+# code, and we especially want
 
 proc copy*(dest, source: Tensor) =
   dest.data.setLen(source.data.len)
@@ -28,7 +28,7 @@ proc copy*(dest, source: Tensor, dest_offset, source_offset, length: int) =
     inc(x)
 
 # XXX make destination the first param on these for consistency
-proc spread*(source, weights, destination: Tensor; destHigh: int) =
+proc spread*(source, weights, destination: Tensor; sourceHigh, destHigh: int) =
    ## A very basic form of convolution, used to carry inputs through
    ## weights and in to an output.
    ##
@@ -39,16 +39,12 @@ proc spread*(source, weights, destination: Tensor; destHigh: int) =
    assert(source      != nil);
    assert(weights     != nil);
    assert(destination != nil);
-   assert(weights.data.len >= (source.data.len * destHigh))
 
    var x = 0
    for i in 0..destHigh:
-      for j in 0..source.data.high:
+      for j in 0..sourceHigh:
          destination.data[i] = destination.data[i] + (source.data[j] * weights.data[x])
          inc x
-
-proc spread*(source, weights, destination: Tensor) =
-  spread(source, weights, destination, destination.data.high)
 
 proc set*(self: Tensor, operand: float32) =
    for i in 0..self.data.high:
@@ -238,4 +234,3 @@ when isMainModule:
          weight_sum(c, a, 4, 2)
          check(abs(c[0] - 0.75) < 0.1)
          check(abs(c[1] - 0.35) < 0.1)
-

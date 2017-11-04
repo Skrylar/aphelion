@@ -7,24 +7,26 @@ type
    LinearLayer* = ref object of Layer
 
 method forward*(self: LinearLayer; inputs: Tensor; scratch: ScratchSet) =
-  let n = (self.values.len-1)
+  let n = self.values.len
   let a = n*self.input_count
 
   # clear all values
   self.values.set(0)
   # run weight*value for each neuron
-  inputs.spread(self.weights, self.values, a)
+  #echo inputs.len, "*", self.weights.len, "=", self.values.len
+  inputs.spread(self.weights, self.values, self.values.len-1, n-1)
   # add linear biases
   self.values.add(self.weights, 0, a, n)
 
 method gradient*(self: LinearLayer; inputs, deltas, total: Tensor; scratch: ScratchSet) =
-  let n = (self.values.len-1)
+  let n = self.values.len
   let a = n*self.input_count
 
   # clear the tensor
   scratch[0].set(0)
   # weights * deltas to determine error contribution
-  deltas.spread(self.weights, scratch[0], self.values.len-1)
+  #echo deltas.len, "*", self.weights.len, "=", self.values.len
+  deltas.spread(self.weights, scratch[0], n, n-1)
   # add contributions
   total.add(scratch[0], 0, 0, a)
   # also push deltas to update our biases
@@ -39,4 +41,3 @@ proc make_linear_layer*(inputs, outputs: int): LinearLayer =
    assert result.values != nil
    result.weights = make_tensor((outputs * result.internal_weights) + (outputs * result.input_count))
    assert result.weights != nil
-
