@@ -6,6 +6,7 @@ import random/cmwc
 import layer/linear
 import simplenetwork
 import backpropagator
+#import backpropagation/adam
 
 var randomizer = Cmwc()
 randomizer.seed(1337)
@@ -54,11 +55,10 @@ for i in 0..10000:
   bp.clear_gradients
   bp.backward goals, mse, net, net.scratch
   #bp.propagate net
-  #bp.feedback net
+
   bp.sgd(0.00005, net, net.scratch)
 
 echo "Loss: ", mse.loss(net.scratch, net.layers[net.layers.high], goals)
 echo "Best: ", best
 net.forward
 echo repr net.layers[net.layers.high]
-

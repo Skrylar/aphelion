@@ -14,7 +14,7 @@ method forward*(self: LinearLayer; inputs: Tensor; scratch: ScratchSet) =
   self.values.set(0)
   # run weight*value for each neuron
   #echo inputs.len, "*", self.weights.len, "=", self.values.len
-  inputs.spread(self.weights, self.values, self.values.len-1, n-1)
+  inputs.spread(self.weights, self.values, self.input_count-1, n-1)
   # add linear biases
   self.values.add(self.weights, 0, a, n)
 
@@ -26,7 +26,7 @@ method gradient*(self: LinearLayer; inputs, deltas, total: Tensor; scratch: Scra
   scratch[0].set(0)
   # weights * deltas to determine error contribution
   #echo deltas.len, "*", self.weights.len, "=", self.values.len
-  deltas.spread(self.weights, scratch[0], n, n-1)
+  deltas.spread(self.weights, scratch[0], self.input_count-1, n-1)
   # add contributions
   total.add(scratch[0], 0, 0, a)
   # also push deltas to update our biases

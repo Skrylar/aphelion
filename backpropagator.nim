@@ -51,7 +51,7 @@ proc backward*(self: Backpropagator, goals: Tensor,
     for x in countdown(last_layer_index - 1, 1):
       # now moderate gradients by next layer's weight values
       self.errors[x].set(0)
-      despread(self.errors[x], net.layers[x+1].weights, net.layers[x+1].values, net.layers[x + 1].weights.len, net.layers[x+1].values.len)
+      despread(self.errors[x], net.layers[x+1].weights, self.errors[x+1], net.layers[x + 1].weights.len, net.layers[x+1].values.len)
 
       # perform gradient calculation
       net.layers[x].gradient(
@@ -61,7 +61,7 @@ proc backward*(self: Backpropagator, goals: Tensor,
         scratch)
 
     self.errors[0].set(0)
-    despread(self.errors[0], net.layers[1].weights, net.layers[1].values, net.layers[1].weights.len, net.layers[1].values.len)
+    despread(self.errors[0], net.layers[1].weights, self.errors[1], net.layers[1].weights.len, net.layers[1].values.len)
 
     # calculate gradients on the final layer
     net.layers[0].gradient(net.inputs,
