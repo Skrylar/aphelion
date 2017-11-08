@@ -5,7 +5,7 @@ import gradientmap
 
 import layer/layer
 import layer/linear
-#import layer/tanh
+import layer/tanh
 #import layer/gru
 
 const
@@ -71,9 +71,8 @@ proc last_output_count(self: SimpleNetwork): int =
 proc add_linear_layer*(self: SimpleNetwork, outputs: int) =
    self.layers.add(make_linear_layer(self.last_output_count, outputs))
 
-#proc add_tanh_layer*(self: SimpleNetwork, outputs: int) =
-   #self.layers.add(make_tanh_layer(self.last_output_count, outputs))
+proc add_tanh_layer*(self: SimpleNetwork, outputs: int) =
+  self.layers.add(make_tanh_layer(self.last_output_count, outputs))
 
 #proc add_gru_layer*(self: SimpleNetwork, outputs: int) =
    #self.layers.add(make_gru_layer(self.last_output_count, outputs))
-

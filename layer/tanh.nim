@@ -6,44 +6,42 @@ import layer
 type
    TanhLayer* = ref object of Layer
 
-method open*(self: TanhLayer) =
-   self.values = make_tensor(self.value_count)
-   assert(self.values != nil)
-   self.weights = make_tensor(self.value_count * self.input_count)
-   assert(self.weights != nil)
+method forward*(self: TanhLayer; inputs: Tensor; scratch: ScratchSet) =
+  let n = self.values.len
+  let a = n*self.input_count
 
-method close*(self: TanhLayer) =
-   self.values  = nil
-   self.weights = nil
+  # clear all values
+  self.values.set(0)
+  # run weight*value for each neuron
+  #echo inputs.len, "*", self.weights.len, "=", self.values.len
+  inputs.spread(self.weights, self.values, self.input_count-1, n-1)
+  # add linear biases
+  self.values.add(self.weights, 0, a, n)
+  # apply curve
+  self.values.tanh
 
-method forward*(self: TanhLayer, inputs: Tensor) =
-   self.values.set(0)
-   inputs.spread(self.weights, self.values)
-   self.values.tanh
+method gradient*(self: TanhLayer; inputs, deltas, total: Tensor; scratch: ScratchSet) =
+  let n = self.values.len
+  let a = n*self.input_count
 
-method gradient*(self: TanhLayer, inputs, deltas, total: Tensor) =
-   self.scratch[0].set(0)
-   deltas.spread(self.weights, self.scratch[0], self.values.len-1)
-   self.scratch[0].tanh_deriv()
-   total.add(self.scratch[0])
-
-method private_gradient*(self: TanhLayer, inputs, deltas, total: Tensor) =
-  discard
-
-method propagate*(self: TanhLayer, updates: Tensor) =
-   self.weights.sub(updates)
-
-method private_propagate*(self: TanhLayer, updates: Tensor) =
-  discard
-
-method randomize_weights*(self: TanhLayer, rng: Random) =
-   for i in 0..(self.weights.len - 1):
-      self.weights.set_at(i, rng.next_float);
+  # clear the tensor
+  scratch[0].set(0)
+  scratch[1].set(self.values)
+  scratch[1].tanh_deriv
+  # weights * deltas to determine error contribution
+  deltas.spread(self.weights, scratch[0], self.input_count-1, n-1)
+  # push deltas to our bias nodes
+  total.add(scratch[0], a, 0, n)
+  # multiply by derivative of curves, apply those to our input weights
+  scratch[0].mul scratch[1]
+  total.add(scratch[0], 0, 0, a)
 
 proc make_tanh_layer*(inputs, outputs: int): TanhLayer =
    result = TanhLayer()
+   assert result != nil
+   result.internal_weights = 1
    result.input_count = inputs
-   result.value_count = outputs
-   result.private_weight_count = 0
-   result.open
-
+   result.values = make_tensor(outputs)
+   assert result.values != nil
+   result.weights = make_tensor((outputs * result.internal_weights) + (outputs * result.input_count))
+   assert result.weights != nil
