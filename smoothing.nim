@@ -28,7 +28,14 @@ proc bayesianAverage*[T:SomeReal](score, count, mean, pseudocount: T): T =
 
 when isMainModule:
   test "Bayesian average":
-    # Book 1 has one rating of 5, and book 2 has fifty ratings with an average of 4.5. https://fulmicoton.com/posts/bayesian_rating/
+    # Book 1 has one rating of 5, and book 2 has fifty ratings with an
+    # average of 4.5. https://fulmicoton.com/posts/bayesian_rating/
     var book1 = bayesianAverage(5.0, 1.0, 3.0, 5.0)
     var book2 = bayesianAverage((4.5 * 50), 50.0, 3.0, 5.0)
     check book2 > book1
+
+proc betaWithSuccess*[T:SomeReal](success, total: T): T =
+  ## Returns the number of successes over one plus the total number of
+  ## binomial trials. The result is the probability of successes
+  ## through a beta distribution.
+  return success / (1 + total)

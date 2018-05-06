@@ -1,3 +1,4 @@
+import math, fenv
 
 when isMainModule:
   import unittest
@@ -49,3 +50,22 @@ when isMainModule:
   test "Average":
     let reals = [1.0, 2.0, 4.0, 8.0]
     check within(average(reals), 3.75, 0.1) == true
+
+proc cosineSimilarity*[T:SomeReal](a, b: openarray[T]): T =
+  var dot = 0.T
+  var leftMagnitude = 0.T
+  var rightMagnitude = 0.T
+
+  for i in 0..<min(a.len, b.len):
+    dot += a[i] * b[i]
+    leftMagnitude += a[i] * a[i]
+    rightMagnitude += b[i] * b[i]
+
+  return dot / ((leftMagnitude.sqrt * rightMagnitude.sqrt)).max(epsilon(T))
+
+when isMainModule:
+  test "Cosine similarity":
+    var a = [5.0, 5.0, 5.0]
+    var b = [0.0, 0.0, 0.0]
+    check within(cosineSimilarity(a, a), 1.0, 0.1)
+    check within(cosineSimilarity(b, b), 0.0, 0.1)
