@@ -1,4 +1,6 @@
 
+{.passC: "-ffast-math -funroll-loops -mavx2".}
+
 import math
 
 type
