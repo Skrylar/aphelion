@@ -51,6 +51,14 @@ when isMainModule:
     let reals = [1.0, 2.0, 4.0, 8.0]
     check within(average(reals), 3.75, 0.1) == true
 
+proc dotProduct*[T:SomeReal](a, b: openarray[T]): T =
+  result = 0.T
+  for i in 0..<min(a.len, b.len):
+    result += a[i] * b[i]
+
+proc magnitude*[T:SomeReal](a: openarray[T]): T =
+  return a.dotProduct(a).sqrt()
+
 proc cosineSimilarity*[T:SomeReal](a, b: openarray[T]): T =
   var dot = 0.T
   var leftMagnitude = 0.T
@@ -58,10 +66,10 @@ proc cosineSimilarity*[T:SomeReal](a, b: openarray[T]): T =
 
   for i in 0..<min(a.len, b.len):
     dot += a[i] * b[i]
-    leftMagnitude += a[i] * a[i]
-    rightMagnitude += b[i] * b[i]
+    leftMagnitude += pow(a[i], 2)
+    rightMagnitude += pow(b[i], 2)
 
-  return dot / ((leftMagnitude.sqrt * rightMagnitude.sqrt)).max(epsilon(T))
+  return dot / (leftMagnitude.sqrt * rightMagnitude.sqrt).max(epsilon(T))
 
 when isMainModule:
   test "Cosine similarity":
